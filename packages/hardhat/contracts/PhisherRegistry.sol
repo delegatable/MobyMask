@@ -2,16 +2,12 @@ pragma solidity ^0.8.13;
 //SPDX-License-Identifier: MIT
 
 import "./Delegatable.sol";
+import "./caveat-enforcers/AbstractRevocationEnforcer.sol";
 import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 
-contract YourContract is Ownable, Delegatable {
+contract PhisherRegistry is Ownable, RevocationEnforcer {
 
-  constructor(string memory name) Delegatable(name, "1") {}
-
-  string public purpose = "Building Unstoppable Apps!!!";
-  function setPurpose(string calldata newPurpose) onlyOwner public {
-    purpose = newPurpose;
-  }
+  constructor(string memory name) RevocationEnforcer(name) {}
 
   mapping (string => bool) isPhisher;
   function claimIfPhisher (string calldata identifier, bool isAccused) onlyOwner public {

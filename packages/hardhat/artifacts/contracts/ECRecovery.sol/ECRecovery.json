@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ECRecovery",
+  "sourceName": "contracts/ECRecovery.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220a3bf859b0744ac35f5ac3eae5dae048828064ba3a5427dbb1f2e952426fb9e5964736f6c634300080d0033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220a3bf859b0744ac35f5ac3eae5dae048828064ba3a5427dbb1f2e952426fb9e5964736f6c634300080d0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

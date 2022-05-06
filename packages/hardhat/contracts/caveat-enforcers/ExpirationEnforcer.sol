@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "./CaveatEnforcer.sol";
 
 contract ExpirationEnforcer is CaveatEnforcer {
-  function enforceCaveat(bytes memory terms, Transaction memory tx, bytes32 delegationHash) override public returns (bool) {
+  function enforceCaveat(bytes memory terms, Transaction memory _transaction, bytes32 _delegationHash) override public view returns (bool) {
     uint limit = bytesToUint(terms);
     require(limit > block.timestamp, "Expiration has passed");
     return true;

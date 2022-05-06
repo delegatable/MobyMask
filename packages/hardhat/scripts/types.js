@@ -40,10 +40,10 @@ const typedMessage = {
       { name: 'queue', type: 'uint' },
     ],
     Delegation: [
-        { name: 'delegate', type: 'address' },
-        { name: 'authority', type: 'bytes32' },
-        { name: 'caveats', type: 'Caveat[]' },
-      ],
+      { name: 'delegate', type: 'address' },
+      { name: 'authority', type: 'bytes32' },
+      { name: 'caveats', type: 'Caveat[]' },
+    ],
     Caveat: [
       { name: 'enforcer', type: 'address' },
       { name: 'terms', type: 'bytes' },
@@ -52,7 +52,7 @@ const typedMessage = {
       { name: 'delegation', type: 'Delegation' },
       { name: 'signature', type: 'bytes' },
     ],
-   }
+  }
 };
 
 module.exports = typedMessage;
