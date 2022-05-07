@@ -1,6 +1,7 @@
 const ganache = require('ganache');
 const ethers = require('ethers');
 import { Router } from "@open-rpc/server-js";
+const cors = require('cors');
 
 const fs = require('fs');
 const path = require('path');
@@ -38,11 +39,26 @@ setupContract()
 async function activateServer () {
   const router = new Router(openrpcDocument, methodHandlerMapping);
   const server = new Server();
-  server.start();
 
-  server.addTransport(HTTPSServerTransport); // will be started immediately
+  const httpOptions = {
+    middleware: [ cors({ origin: "*" }) ],
+    port: 4345
+  };
+  const httpTransport = new HTTPServerTransport(httpOptions);
+
+  /*
+  const httpsOptions = { // extends https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
+    middleware: [ cors({ origin: "*" }) ],
+    port: 4346,
+    key: await fs.readFile("test/fixtures/keys/agent2-key.pem"),
+    cert: await fs.readFile("test/fixtures/keys/agent2-cert.pem"),
+    ca: fs.readFileSync("ssl/ca.crt")
+  };
+  const httpsTransport = new HTTPSServerTransport(httpsOptions);
+  */
+
   server.setRouter(router);
-  server.addTransports([ HTTPSServerTransport, HTTPServerTransport] ); // will be started immediately.
+  server.addTransports([ httpTransport /*, httpsTransport */] ); // will be started immediately.
 }
 
 async function setupContract () {
