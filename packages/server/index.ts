@@ -1,5 +1,6 @@
 const ganache = require('ganache');
 import { Router } from "@open-rpc/server-js";
+import { HTTPSServerTransportOptions } from "@open-rpc/server-js/build/transports/https";
 import { ethers } from "ethers";
 const cors = require('cors');
 
@@ -9,8 +10,11 @@ const configPath = path.join(__dirname, './config.json');
 const { mnemonic } = require('./secrets.json');
 
 const openrpcDocument = require('./openrpc.json');
+const { parseOpenRPCDocument } = require("@open-rpc/schema-utils-js");
 const { Server } = require("@open-rpc/server-js");
-const { HTTPServerTransport, HTTPSServerTransport } = require("@open-rpc/server-js");
+const openrpcServer = require("@open-rpc/server-js");
+console.dir(openrpcServer);
+const { HTTPTransport, HTTPSTransport } = openrpcServer.transports;
 
 const phisherRegistryArtifacts = require('../hardhat/artifacts/contracts/PhisherRegistry.sol/PhisherRegistry.json');
 const { abi } = phisherRegistryArtifacts;
@@ -20,7 +24,8 @@ const ganacheProvider = ganache.provider({
     dbPath: './db',
   },
   wallet: {
-    mnemonic
+    mnemonic,
+    defaultBalance: '100000'
   },
   miner: {
     blockGasLimit: '0x15f90000000000',
@@ -33,12 +38,11 @@ const ganacheProvider = ganache.provider({
 });
 const provider = new ethers.providers.Web3Provider(ganacheProvider);
 
-
 let registry: ethers.Contract;
 let signer: ethers.Wallet;
 let signerAddress: string;
 
-const methodHandlerMapping = {
+const methodMapping = {
   submitInvocations: async (signedInvocations: SignedInvocation[]): Promise<boolean> => {
     await registry.invoke(signedInvocations);
     return true;
@@ -52,19 +56,41 @@ setupSigner()
   .catch(console.error);
 
 async function setupSigner () {
+  const accounts = await ganacheProvider.request({ method: 'eth_accounts' });
+  const balance = await ganacheProvider.request({ method: 'eth_getBalance', params: [ accounts[0], 'latest' ] });
   signer = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
-  console.log(`balance is ${await provider.getBalance(signer.address)}`);
 }
 
 async function activateServer () {
-  const router = new Router(openrpcDocument, methodHandlerMapping);
-  const server = new Server();
+  const router = new Router(openrpcDocument, methodMapping);
+  const serverOptions = {
+    openrpcDocument: await parseOpenRPCDocument(openrpcDocument),
+    transportConfigs: [
+      {
+        type: "HTTPTransport",
+        options: {
+          port: 3330,
+          middleware: [],
+        },
+      },
+      {
+        type: "HTTPSTransport",
+        options: {
+          port: 3331,
+          middleware: [],
+        },
+      },
+    ],
+    methodMapping,
+  };
+  const server = new Server(serverOptions);
 
   const httpOptions = {
     middleware: [ cors({ origin: "*" }) ],
     port: 4345
   };
-  const httpTransport = new HTTPServerTransport(httpOptions);
+  console.dir(HTTPTransport)
+  const httpTransport = new HTTPTransport(httpOptions);
 
   /*
   const httpsOptions = { // extends https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
@@ -77,8 +103,9 @@ async function activateServer () {
   const httpsTransport = new HTTPSServerTransport(httpsOptions);
   */
 
-  server.setRouter(router);
-  server.addTransports([ httpTransport /*, httpsTransport */] ); // will be started immediately.
+  console.dir(server);
+  server.start();
+  // server.addTransports([ httpTransport /*, httpsTransport */] ); // will be started immediately.
 }
 
 async function setupContract (): Promise<ethers.Contract> {
@@ -94,11 +121,7 @@ async function setupContract (): Promise<ethers.Contract> {
 
 async function deployContract () {
   const Registry = new ethers.ContractFactory(abi, phisherRegistryArtifacts.bytecode, signer);
-  console.dir(signer);
-  console.log(`trying to publish with ${signer}`);
-  console.dir(signer);
   const balance = await provider.getBalance(signer?.address && signer.address);
-  console.log(`they have`, balance.toString())
   const registry = await Registry.deploy('MobyMask');
   const address = registry.address;
   fs.writeFileSync(configPath, JSON.stringify({ address }, null, 2));
