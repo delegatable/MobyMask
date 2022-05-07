@@ -1,0 +1,104 @@
+{
+	"openrpc": "1.2.4",
+	"info": {
+		"title": "Invocation JSON-RPC Server",
+		"version": "1.0.0"
+	},
+	"methods": [
+		{
+			"name": "submitInvocations",
+			"description": "Accepts invocations stores them",
+			"params": [
+				{
+					"name": "InvocationMessage",
+					"description": "An invocation you want the server to accept",
+					"schema": {
+						"$ref": "#/components/schemas/Invocations"
+					}
+				}
+			],
+			"result": {
+				"name": "SubmitInvocationResult",
+				"description": "Returns `true` if successfull. Error on failure",
+				"schema": {
+					"type": "boolean"
+				}
+			}
+		}
+	],
+	"components": {
+		"schemas": {
+			"ReplayProtection": {
+				"title": "ReplayProtection",
+				"type": "object",
+				"properties": {
+					"nonce": {
+						"title": "Nonce",
+						"type": "string",
+						"format": "HexNumber",
+						"pattern": "^0x[0-9a-f]*$"
+					}
+				}
+			},
+			"Address": {
+				"title": "Address",
+                "type": "string",
+				"pattern": "^0x[0-9,a-f,A-F]{40}$"
+			},
+			"Transaction": {
+				"title": "Transaction",
+				"type": "object",
+				"properties": {
+					"to": {
+						"title": "to",
+						"$ref": "#/components/schemas/Address"
+					},
+					"from": {
+						"title": "from",
+						"$ref": "#/components/schemas/Address"
+					},
+					"gasLimit": {
+						"title": "Gas Limit",
+						"type": "string",
+						"format": "HexNumber",
+						"pattern": "^0x([1-9a-f]+[0-9a-f]*|0)$"
+					}
+				}
+			},
+			"SignedDelegation": {
+				"title": "SignedDelegation",
+				"type": "string",
+				"pattern": "^0x[0-9a-f]*$"
+			},
+			"Invocation": {
+				"type": "object",
+				"properties": {
+					"authority": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SignedDelegation"
+						}
+					},
+					"transaction": {
+						"$ref": "#/components/schemas/Transaction"
+					}
+				}
+			},
+			"Invocations": {
+				"title": "Invocations",
+				"type": "object",
+				"properties": {
+					"replayProtection": {
+						"$ref": "#/components/schemas/ReplayProtection"
+					},
+					"batch": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Invocation"
+						}
+					}
+				}
+			}
+		}
+	}
+}
