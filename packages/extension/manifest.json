@@ -18,6 +18,12 @@
     "host_permissions": [
         "*://*/*"
     ],
+    "web_accessible_resources": [
+      {
+        "resources": [ "logo/*" ],
+      "matches": [ "https://twitter.com/*" ]
+      }
+    ],
     "background": {
         "service_worker": "dist/service-worker.bundle.js"
     },

@@ -1,16 +1,19 @@
 var allowlist = [];
 
+console.log('content script loaded');
 function addBadges() {
+  console.log('adding badges');
   let usernames = contains('span', '@');
 
   for (user of usernames) {
+    console.log('enumerating ', user);
     let username = user.textContent.toLowerCase().substring(1);
-    if (allowlist.some(item => item.toLowerCase() === username)) {
+    if (true || allowlist.some(item => item.toLowerCase() === username)) {
       if (!user.getAttribute("mobymask-tagged") && !user.parentElement.getAttribute("mobymask-tagged")) {
         var icon = document.createElement("img");
         icon.src = chrome.runtime.getURL('/logo/logo.svg');
-        icon.style = "padding-left:3px;display:inline;vertical-align:text-bottom;float:none;height:15px;width:15px;left:15px;";
-        icon.title = `@${username} is a MobyMask verified user`;
+        icon.style = "padding-left:5px;display:inline;vertical-align:text-bottom;float:none;height:20px;width:20px;left:15px;";
+        icon.title = `@${username} is trusted by the MobyMask network.`;
         icon.setAttribute('mobymask-badge', true);
         user.appendChild(icon);
         user.setAttribute("mobymask-tagged", true);
@@ -59,6 +62,7 @@ function removeReplyToBadges() {
 
 function contains(selector, text) {
   var elements = document.querySelectorAll(selector);
+  console.log(`found ${elements.length} handles`);
   return [].filter.call(elements, function (element) {
     return RegExp(text).test(element.textContent);
   });
@@ -99,6 +103,8 @@ chrome.runtime.sendMessage({ func: "twitterEnabled" }, function (res) {
     setupObserver();
   }
 });
+
+setTimeout(addBadges, 1500);
 
 function getTwitterAllowlist() {
   chrome.runtime.sendMessage({ func: "twitterLists" }, function (res) {
