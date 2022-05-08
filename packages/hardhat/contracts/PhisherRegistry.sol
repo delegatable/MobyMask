@@ -7,14 +7,20 @@ import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZe
 
 contract PhisherRegistry is Ownable, RevocationEnforcer {
 
-  mapping (string => bool) isPhisher;
-  event PhisherStatusUpdated(string indexed entity, bool isPhisher);
-
   constructor(string memory name) RevocationEnforcer(name) {}
 
+  mapping (string => bool) isPhisher;
+  event PhisherStatusUpdated(string indexed entity, bool isPhisher);
   function claimIfPhisher (string calldata identifier, bool isAccused) onlyOwner public {
     isPhisher[identifier] = isAccused;
     emit PhisherStatusUpdated(identifier, isAccused);
+  }
+
+  mapping (string => bool) isMember;
+  event MemberStatusUpdated(string indexed entity, bool isMember);
+  function claimIfMember (string calldata identifier, bool isNominated) onlyOwner public {
+    isMember[identifier] = isNominated;
+    emit MemberStatusUpdated(identifier, isNominated);
   }
 
   /**

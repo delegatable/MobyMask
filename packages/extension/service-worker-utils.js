@@ -4,3 +4,4 @@
 // The importation is done in the file `service-worker.js`.
 
 console.log("External file is also loaded!")
+

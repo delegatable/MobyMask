@@ -1,8 +1,8 @@
 {
     // Comments are accepted in the manifest, even though it is JSON.
     "manifest_version": 3,
-    "name": "Chrome Extension v3 Starter",
-    "description": "A minimal example of a chrome extension using manifest v3",
+    "name": "MobyMask",
+    "description": "An extension for reporting and avoiding phishers on the web.",
     "version": "0.0.1",
     "icons": {
         "16": "logo/logo-16.png",
@@ -11,7 +11,7 @@
     },
     "options_page": "settings/settings.html",
     "action": {
-        "default_title": "Chrome Addon v3 Starter",
+        "default_title": "MobyMask",
         "default_popup": "popup/popup.html"
     },
     "permissions": [],
@@ -19,10 +19,10 @@
         "*://*/*"
     ],
     "background": {
-        "service_worker": "service-worker.js"
+        "service_worker": "dist/service-worker.bundle.js"
     },
     "content_scripts": [{
-        "js": ["foreground.js"],
-        "matches": ["https://github.com/*"]
+        "js": ["contentscripts/twitter.js"],
+        "matches": ["https://twitter.com/*"]
     }]
 }
