@@ -42,9 +42,19 @@ let registry: ethers.Contract;
 let signer: ethers.Wallet;
 let signerAddress: string;
 
+
+
 const methodMapping = {
   submitInvocations: async (signedInvocations: SignedInvocation[]): Promise<boolean> => {
-    await registry.invoke(signedInvocations);
+    try {
+      const tx = await registry.invoke(signedInvocations);
+      const block = tx.block;
+      console.log(block);
+    } catch (err) {
+      console.log('Invocation failed.', err);
+      return false;
+    }
+
     return true;
   }, 
 };

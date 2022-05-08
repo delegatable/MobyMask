@@ -6,6 +6,7 @@ import "./caveat-enforcers/CaveatEnforcer.sol";
 import "hardhat/console.sol";
 
 abstract contract Delegatable is EIP712Decoder {
+  event DelegationTriggered(address principal, address indexed agent);
 
   bytes32 public immutable domainHash;
   constructor (string memory contractName, string memory version) {
@@ -80,6 +81,7 @@ abstract contract Delegatable is EIP712Decoder {
       Transaction memory transaction = invocation.transaction;
 
       require(transaction.to == address(this), "Invocation target does not match");
+      emit DelegationTriggered(intendedSender, sender);
       success = execute(
         transaction.to,
         transaction.data,
