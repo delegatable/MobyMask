@@ -1,13 +1,12 @@
-const ganache = require('ganache');
 import { Router } from "@open-rpc/server-js";
-import { HTTPSServerTransportOptions } from "@open-rpc/server-js/build/transports/https";
 import { ethers } from "ethers";
 const cors = require('cors');
+const createGanacheProvider = require('./providers/ganacheProvder');
 
 const fs = require('fs');
 const path = require('path');
 const configPath = path.join(__dirname, './config.json');
-const { mnemonic } = require('./secrets.json');
+const { mnemonic, rpcUrl } = require('./secrets.json');
 
 const openrpcDocument = require('./openrpc.json');
 const { parseOpenRPCDocument } = require("@open-rpc/schema-utils-js");
@@ -19,30 +18,16 @@ const { HTTPTransport, HTTPSTransport } = openrpcServer.transports;
 const phisherRegistryArtifacts = require('../hardhat/artifacts/contracts/PhisherRegistry.sol/PhisherRegistry.json');
 const { abi } = phisherRegistryArtifacts;
 
-const ganacheProvider = ganache.provider({
-  database: {
-    dbPath: './db',
-  },
-  wallet: {
-    mnemonic,
-    defaultBalance: '100000'
-  },
-  miner: {
-    blockGasLimit: '0x15f90000000000',
-    defaultTransactionGasLimit: '0x15f900000000000000',
-  },
-  logging: {
-    debug: true,
-    verbose: true,
-  }
-});
-const provider = new ethers.providers.Web3Provider(ganacheProvider);
+let provider: ethers.providers.Provider;
+if (process.env.ENV === 'PROD') {
+  provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+} else {
+  const ganacheProvder = createGanacheProvider(mnemonic);
+  provider = new ethers.providers.Web3Provider(ganacheProvder);
+}
 
 let registry: ethers.Contract;
 let signer: ethers.Wallet;
-let signerAddress: string;
-
-
 
 const methodMapping = {
   submitInvocations: async (signedInvocations: SignedInvocation[]): Promise<boolean> => {
@@ -66,8 +51,6 @@ setupSigner()
   .catch(console.error);
 
 async function setupSigner () {
-  const accounts = await ganacheProvider.request({ method: 'eth_accounts' });
-  const balance = await ganacheProvider.request({ method: 'eth_getBalance', params: [ accounts[0], 'latest' ] });
   signer = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
 }
 
@@ -99,7 +82,6 @@ async function activateServer () {
     middleware: [ cors({ origin: "*" }) ],
     port: 4345
   };
-  console.dir(HTTPTransport)
   const httpTransport = new HTTPTransport(httpOptions);
 
   /*
@@ -113,7 +95,6 @@ async function activateServer () {
   const httpsTransport = new HTTPSServerTransport(httpsOptions);
   */
 
-  console.dir(server);
   server.start();
   // server.addTransports([ httpTransport /*, httpsTransport */] ); // will be started immediately.
 }
@@ -146,6 +127,7 @@ async function deployContract () {
 async function attachToContract(address: string) {
   const Registry = new ethers.Contract(address, abi, signer);
   const registry = await Registry.attach(address);
+  console.log('Attaching to existing contract');
   return registry.deployed();
 }
 
