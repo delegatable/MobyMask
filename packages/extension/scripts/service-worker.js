@@ -8,7 +8,11 @@ console.log("This prints to the console of the service worker (background script
 importScripts('service-worker-utils.js')
 require('./api.js');
 
-let twitterAllowlist = [];
+let twitterAllowlist = [
+  // Placeholder stuff:
+  'danfinlay',
+  'metamask',
+];
 
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.func) {
