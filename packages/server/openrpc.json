@@ -1,7 +1,7 @@
 {
 	"openrpc": "1.2.4",
 	"info": {
-		"title": "Invocation JSON-RPC Server",
+		"title": "MobyMaskAPI",
 		"version": "1.0.0"
 	},
 	"methods": [

@@ -1,0 +1,11 @@
+{
+    "openrpcDocument": "openrpc.json",
+    "outDir": "../",
+    "components": [
+        {
+            "type": "client",
+            "name": "mobymask-client",
+            "language": "typescript"
+        }
+    ]
+}

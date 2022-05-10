@@ -1,12 +1,20 @@
-// This is the service worker script, which executes in its own context
-// when the extension is installed or refreshed (or when you access its console).
-// It would correspond to the background script in chrome extensions v2.
+import MobyMaskAPI from './client/typescript/src/index';
+import ethers from 'ethers';
+const provider = new ethers.providers.JsonRpcProvider("http://localhost:3330");
 
-console.log("This prints to the console of the service worker (background script)")
+const api = new MobyMaskAPI({
+  transport: {
+    type: 'http',
+    protocol: 'http',
+    host: 'localhost',
+    port: 3330,
+  },
+});
+
+
 
 // Importing and using functionality from external files is also possible.
 importScripts('service-worker-utils.js')
-require('./api.js');
 
 let twitterAllowlist = [
   // Placeholder stuff:
@@ -14,11 +22,14 @@ let twitterAllowlist = [
   'metamask',
 ];
 
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   switch (request.func) {
     case "twitterLists":
       sendResponse({ allowlist: twitterAllowlist });
       break;
+    case 'checkEntity':
+
+
   }
 });
 

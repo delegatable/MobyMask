@@ -3,6 +3,11 @@ import { ethers } from "ethers";
 const cors = require('cors');
 const createGanacheProvider = require('./providers/ganacheProvder');
 
+// For reads, clients can hit the node directly.
+/* so for now, we just care about this server being able to relay transactions.
+  * We can add more features later, like pre-simulating txs so only process good ones.
+  */
+
 const fs = require('fs');
 const path = require('path');
 const configPath = path.join(__dirname, './config.json');
@@ -39,7 +44,6 @@ const methodMapping = {
       console.log('Invocation failed.', err);
       return false;
     }
-
     return true;
   }, 
 };
@@ -52,6 +56,7 @@ setupSigner()
 
 async function setupSigner () {
   signer = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
+  console.dir(signer);
 }
 
 async function activateServer () {
