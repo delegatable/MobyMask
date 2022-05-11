@@ -12,6 +12,7 @@ const {
 } = TypedDataUtils;
 const CONTRACT_NAME = 'PhisherRegistry';
 
+/*
 type SignedDelegation = {
   delegation: Delegation,
   signature: string,
@@ -32,8 +33,9 @@ type Invitation = {
   signedDelegations: SignedDelegation[],
   key: string,
 }
+*/
 
-export async function validateInvitation (invitation: Invitation): Promise<boolean> {
+export async function validateInvitation (invitation) {
 
   const { signedDelegations, key } = invitation;
 

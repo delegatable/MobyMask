@@ -8,7 +8,7 @@ import {
   useLocation
 } from "react-router-dom";
 
-import { validateInvitation } from './delegator.ts';
+import { validateInvitation } from './delegator';
 
 export default function () {
   const query = useQuery();

@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Route,
   Link,
-  Routes,
+  Switch,
   useLocation
 } from "react-router-dom";
 import Initiation from './Initiation';
@@ -15,10 +15,14 @@ export default function QueryParamsRouter() {
   let query = useQuery();
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing/>}></Route>
-      <Route path="/initiation/" element={<Initiation/>}></Route>
-    </Routes>
+    <Switch>
+      <Route exact path="/">
+        <Landing/>
+      </Route>
+      <Route path="/initiation/">
+        <Initiation/>
+      </Route>
+    </Switch>
   );
 }
 
