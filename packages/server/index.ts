@@ -1,7 +1,20 @@
 import { Router } from "@open-rpc/server-js";
 import { ethers } from "ethers";
+const types = require('./types')
 const cors = require('cors');
 const createGanacheProvider = require('./providers/ganacheProvder');
+const createTypedMessage = require('./createTypedMessage');
+const sigUtil = require('eth-sig-util');
+const {
+  TypedDataUtils,
+} = sigUtil;
+const {
+  typedSignatureHash,
+  encodeData,
+} = TypedDataUtils;
+const CONTRACT_NAME = 'PhisherRegistry';
+
+const BASE_URI = 'http://localhost:3000';
 
 // For reads, clients can hit the node directly.
 /* so for now, we just care about this server being able to relay transactions.
@@ -33,6 +46,7 @@ if (process.env.ENV === 'PROD') {
 
 let registry: ethers.Contract;
 let signer: ethers.Wallet;
+let _chainId: string;
 
 const methodMapping = {
   submitInvocations: async (signedInvocations: SignedInvocation[]): Promise<boolean> => {
@@ -52,6 +66,7 @@ setupSigner()
   .then(setupContract)
   .then(_registry => registry = _registry)
   .then(activateServer)
+  .then(signDelegation)
   .catch(console.error);
 
 async function setupSigner () {
@@ -104,10 +119,13 @@ async function activateServer () {
   // server.addTransports([ httpTransport /*, httpsTransport */] ); // will be started immediately.
 }
 
+
+
 async function setupContract (): Promise<ethers.Contract> {
   try {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const { address } = config;
+    const { address, chainId } = config;
+    _chainId = chainId;
     return attachToContract(address)
   } catch (err) {
     console.log('No config detected, deploying contract and creating one.');
@@ -120,7 +138,7 @@ async function deployContract () {
   const balance = await provider.getBalance(signer?.address && signer.address);
   const registry = await Registry.deploy('MobyMask');
   const address = registry.address;
-  fs.writeFileSync(configPath, JSON.stringify({ address }, null, 2));
+  fs.writeFileSync(configPath, JSON.stringify({ address, chainId: registry.deployTransaction.chainId }, null, 2));
   try {
     return await registry.deployed();
   } catch (err) {
@@ -133,7 +151,8 @@ async function attachToContract(address: string) {
   const Registry = new ethers.Contract(address, abi, signer);
   const registry = await Registry.attach(address);
   console.log('Attaching to existing contract');
-  return registry.deployed();
+  const deployed = await registry.deployed();
+  return deployed;
 }
 
 type Invocation = {
@@ -166,4 +185,56 @@ type Caveat = {
 type SignedInvocation = {
   invocation: Invocation,
   signature: string,
+}
+
+async function signDelegation () {
+  const delegate = ethers.Wallet.createRandom();
+
+  // Prepare the delegation message.
+  // This contract is also a revocation enforcer, so it can be used for caveats:
+  const delegation = {
+    delegate: delegate.address,
+    authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    caveats: [{
+      enforcer: registry.address,
+      terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    }],
+  };
+  const typedMessage = createTypedMessage(registry, delegation, 'Delegation', CONTRACT_NAME, _chainId);
+
+  // Owner signs the delegation:
+  const privateKey = fromHexString(signer.privateKey.substring(2));
+  const signature = sigUtil.signTypedData_v4(
+    privateKey,
+    typedMessage
+  );
+  const signedDelegation = {
+    signature,
+    delegation,
+  }
+  const invitation = {
+    v:1,
+    signedDelegations: [signedDelegation],
+    key: delegate.privateKey,
+  }
+  console.log('A SIGNED DELEGATION/INVITE LINK:');
+  console.dir(invitation);
+  console.log(BASE_URI + '/initiation?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
+}
+
+function fromHexString (hexString: string) {
+  console.dir(hexString);
+  if (!hexString || typeof hexString !== 'string') {
+    throw new Error('Expected a hex string.');
+  }
+  const matched = hexString.match(/.{1,2}/g)
+  if (!matched) {
+    throw new Error('Expected a hex string.');
+  }
+  const mapped = matched.map(byte => parseInt(byte, 16));
+  if (!mapped || mapped.length !== 32) {
+    console.dir(mapped);
+    throw new Error('Expected a hex string.');
+  }
+  return new Uint8Array(mapped);
 }

@@ -1,9 +1,12 @@
 import React from 'react';
 import {
   BrowserRouter as Router,
+  Route,
   Link,
+  Routes,
   useLocation
 } from "react-router-dom";
+import Initiation from './Initiation';
 
 // Routes
 import Landing from './Landing';
@@ -11,33 +14,11 @@ import Landing from './Landing';
 export default function QueryParamsRouter() {
   let query = useQuery();
 
-  console.dir(query);
-  if (!query.get('page')) {
-    return Landing();
-  }
-
   return (
-    <div>
-      <div>
-        <h2>Accounts</h2>
-        <ul>
-          <li>
-            <Link to="/account?name=netflix">Netflix</Link>
-          </li>
-          <li>
-            <Link to="/account?name=zillow-group">Zillow Group</Link>
-          </li>
-          <li>
-            <Link to="/account?name=yahoo">Yahoo</Link>
-          </li>
-          <li>
-            <Link to="/account?name=modus-create">Modus Create</Link>
-          </li>
-        </ul>
-
-        <div>{query.get("name")}</div>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/" element={<Landing/>}></Route>
+      <Route path="/initiation/" element={<Initiation/>}></Route>
+    </Routes>
   );
 }
 

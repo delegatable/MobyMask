@@ -5,7 +5,7 @@ function Landing() {
   return (
     <div>
       <p>
-        Get warned about phisers on the web.
+        Get warned about phisers on the web:
       </p>
       <button className='installButton' disabled>Install the Web Extension (coming soon!)</button>
     </div>
