@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 const types = require('./types')
+const { recoverSigner } = require('eth-delegatable-utils');
 const createTypedMessage = require('./createTypedMessage');
 const sigUtil = require('@metamask/eth-sig-util');
 const { chainId, address } = require('./config.json');
@@ -33,6 +34,7 @@ type Invitation = {
 */
 
 export async function validateInvitation (invitation, provider) {
+  console.log('invitation', invitation);
 
   const { chainId } = await provider.getNetwork();
   const { signedDelegations, key } = invitation;
@@ -41,16 +43,15 @@ export async function validateInvitation (invitation, provider) {
 
   for (let i = 0; i < signedDelegations.length; i++) {
     const signedDelegation = signedDelegations[i];
+    const signer = recoverSigner(signedDelegation, {
+      chainId,
+      verifyingContract: registry.address,
+      name: CONTRACT_NAME,
+    });
+
     const typedMessage = createTypedMessage(registry, signedDelegation.delegation, 'Delegation', CONTRACT_NAME, chainId);
 
     console.log('submitting typed message as data', typedMessage);
-
-    const signer = sigUtil.recoverTypedSignature({
-      data: typedMessage.data,
-      signature: signedDelegation.signature,
-      version: 'V4',
-    });
-    console.log('recovered signer', signer);
 
     const delegate = signedDelegations[signedDelegations.length - 1].delegation.delegate;
     if (wallet.address.toLowerCase() !== delegate.toLowerCase()) {

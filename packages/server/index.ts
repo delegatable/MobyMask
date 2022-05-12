@@ -5,6 +5,7 @@ const cors = require('cors');
 const createGanacheProvider = require('./providers/ganacheProvder');
 const createTypedMessage = require('../react-app/src/createTypedMessage');
 const sigUtil = require('eth-sig-util');
+const { generateUtil } = require('eth-delegatable-utils');
 const {
   TypedDataUtils,
 } = sigUtil;
@@ -190,6 +191,12 @@ type SignedInvocation = {
 }
 
 async function signDelegation () {
+
+  const util = generateUtil({
+    chainId: _chainId,
+    verifyingContract: registry.address,
+    name: CONTRACT_NAME,      
+  })
   const delegate = ethers.Wallet.createRandom();
 
   // Prepare the delegation message.
@@ -202,18 +209,11 @@ async function signDelegation () {
       terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
     }],
   };
+
   const typedMessage = createTypedMessage(registry, delegation, 'Delegation', CONTRACT_NAME, _chainId);
 
   // Owner signs the delegation:
-  const privateKey = fromHexString(signer.privateKey.substring(2));
-  const signature = sigUtil.signTypedData_v4(
-    privateKey,
-    typedMessage
-  );
-  const signedDelegation = {
-    signature,
-    delegation,
-  }
+  const signedDelegation = util.signDelegation(delegation, signer.privateKey);
   const invitation = {
     v:1,
     signedDelegations: [signedDelegation],

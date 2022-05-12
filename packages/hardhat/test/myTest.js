@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const friendlyTypes = require('../types');
 const BigNumber = ethers.BigNumber;
+const { generateUtil } = require('eth-delegatable-utils');
 const createTypedMessage = require('../scripts/createTypedMessage');
 const sigUtil = require('eth-sig-util');
 const {
@@ -15,7 +16,7 @@ const { encode } = require("punycode");
 const { TIMEOUT } = require("dns");
 
 const types = signTypedDataify(friendlyTypes);
-const CONTRACT_NAME = 'YourContract';
+const CONTRACT_NAME = 'PhisherRegistry';
 const ownerHexPrivateKey = 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const account1PrivKey = '59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d';
 const account2PrivKey = '5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a';
@@ -51,6 +52,11 @@ describe(CONTRACT_NAME, function () {
 
     const targetString = 'A totally DELEGATED purpose!'
     const yourContract = await deployContract();
+    const util = generateUtil({
+      chainId: yourContract.chainId,
+      verifyingContract: yourContract.address,
+      name: CONTRACT_NAME,      
+    })
 
     // Prepare the delegation message:
     // This message has no caveats, and authority 0,
@@ -61,18 +67,7 @@ describe(CONTRACT_NAME, function () {
       authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
       caveats: [],
     };
-    const typedMessage = createTypedMessage(yourContract, delegation, 'Delegation', CONTRACT_NAME);
-
-    // Owner signs the delegation:
-    const privateKey = fromHexString(ownerHexPrivateKey);
-    const signature = sigUtil.signTypedData_v4(
-      privateKey,
-      typedMessage
-    );
-    const signedDelegation = {
-      signature,
-      delegation,
-    }
+    const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
 
     // Delegate signs the invocation message:
     const desiredTx = await yourContract.populateTransaction.setPurpose(targetString);

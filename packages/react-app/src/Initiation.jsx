@@ -15,18 +15,26 @@ export default function (props) {
   const { provider } = props;
   const [ invitation, setInvitation ] = useState(null);
   const [ errorMessage, setErrorMessage ] = useState(null);
+  const [ loading, setLoading ] = useState(false);
 
   useEffect(async () => {
     const network = await provider.getNetwork();
     console.log('network is ', network);
 
-    try {
-      const parsedInvitation = JSON.parse(query.get("invitation"));
-      await validateInvitation(parsedInvitation, provider);
-      console.dir(parsedInvitation)
-      setInvitation(parsedInvitation);
-    } catch (err) {
-      setErrorMessage(err.message);
+    if (!loading) {
+      setLoading(true);
+      if (!invitation) {
+        try {
+          const parsedInvitation = JSON.parse(query.get("invitation"));
+          await validateInvitation(parsedInvitation, provider);
+          console.dir(parsedInvitation)
+          setInvitation(parsedInvitation);
+          setLoading(false);
+        } catch (err) {
+          console.error(err);
+          setErrorMessage(err.message);
+        }
+      }
     }
   })
 
