@@ -11,7 +11,8 @@ import Initiation from './Initiation';
 // Routes
 import Landing from './Landing';
 
-export default function QueryParamsRouter() {
+export default function QueryParamsRouter(props) {
+  const { provider } = props;
   let query = useQuery();
 
   return (
@@ -20,7 +21,7 @@ export default function QueryParamsRouter() {
         <Landing/>
       </Route>
       <Route path="/initiation/">
-        <Initiation/>
+        <Initiation provider={provider} />
       </Route>
     </Switch>
   );

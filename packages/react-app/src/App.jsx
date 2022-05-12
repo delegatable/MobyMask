@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import QueryParamsRoute from './QueryParamsRoute';
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
+import MetaMaskOnboarding from '@metamask/onboarding'
 import { Alert, Button, Col, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
@@ -68,6 +69,7 @@ if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 //
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
+const testMobyNet = new ethers.providers.JsonRpcProvider("http://localhost:8545");
 const scaffoldEthProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider("https://rpc.scaffoldeth.io:48544")
   : null;
@@ -83,9 +85,7 @@ const mainnetInfura = navigator.onLine
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = new ethers.providers.StaticJsonRpcProvider('http://localhost:8545');
 
 // 🔭 block explorer URL
 const blockExplorer = targetNetwork.blockExplorer;
@@ -168,6 +168,20 @@ const web3Modal = new Web3Modal({
 });
 
 function App(props) {
+  const [injectedProvider, setInjectedProvider] = useState();
+  const [address, setAddress] = useState();
+
+  if (!injectedProvider && MetaMaskOnboarding.isMetaMaskInstalled()) { 
+    const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
+    setInjectedProvider(ethersProvider);
+  }
+
+  if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+    return <div>Please <button onClick={() => {
+      const onboarding = new MetaMaskOnboarding();
+      onboarding.startOnboarding();
+    }}>Install MetaMask</button> to continue.</div>;
+  }
 
   return (
     <div className="App">
@@ -182,7 +196,7 @@ function App(props) {
       </header>
 
       <Router>
-        <QueryParamsRoute/>
+        <QueryParamsRoute provider={testMobyNet}/>
       </Router>
 
       <div className='footer'>
@@ -194,15 +208,6 @@ function App(props) {
   );
 
 
-  const mainnetProvider =
-    poktMainnetProvider && poktMainnetProvider._isProvider
-      ? poktMainnetProvider
-      : scaffoldEthProvider && scaffoldEthProvider._network
-      ? scaffoldEthProvider
-      : mainnetInfura;
-
-  const [injectedProvider, setInjectedProvider] = useState();
-  const [address, setAddress] = useState();
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();

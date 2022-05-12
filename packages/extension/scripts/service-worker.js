@@ -1,17 +1,15 @@
 import MobyMaskAPI from './client/typescript/src/index';
 import ethers from 'ethers';
-const provider = new ethers.providers.JsonRpcProvider("http://localhost:3330");
+const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
 
 const api = new MobyMaskAPI({
   transport: {
     type: 'http',
     protocol: 'http',
     host: 'localhost',
-    port: 3330,
+    port: 8545,
   },
 });
-
-
 
 // Importing and using functionality from external files is also possible.
 importScripts('service-worker-utils.js')

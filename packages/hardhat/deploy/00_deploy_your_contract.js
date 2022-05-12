@@ -5,12 +5,18 @@
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
+  console.dir(deployer);
+  try {
+
   await deploy("PhisherRegistry", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ "MobyMask" ],
     log: true,
   });
+  } catch (err) {
+    console.error('failed to deploy', err);
+  }
 
   /*
     // Getting a previously deployed contract
@@ -48,4 +54,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   */
 };
-module.exports.tags = ["YourContract"];
+
+module.exports.tags = ["PhisherRegistry"];
+module.exports.id = 'phisher registry';

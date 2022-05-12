@@ -1,9 +1,9 @@
 import { Router } from "@open-rpc/server-js";
 import { ethers } from "ethers";
-const types = require('./types')
+const types = require('../react-app/src/types')
 const cors = require('cors');
 const createGanacheProvider = require('./providers/ganacheProvder');
-const createTypedMessage = require('./createTypedMessage');
+const createTypedMessage = require('../react-app/src/createTypedMessage');
 const sigUtil = require('eth-sig-util');
 const {
   TypedDataUtils,
@@ -38,8 +38,10 @@ const { abi } = phisherRegistryArtifacts;
 
 let provider: ethers.providers.Provider;
 if (process.env.ENV === 'PROD') {
+  console.log('Deploying to PROD');
   provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 } else {
+  console.log('TEST SERVER MODE');
   const ganacheProvder = createGanacheProvider(mnemonic);
   provider = new ethers.providers.Web3Provider(ganacheProvder);
 }
@@ -218,7 +220,7 @@ async function signDelegation () {
     key: delegate.privateKey,
   }
   console.log('A SIGNED DELEGATION/INVITE LINK:');
-  console.dir(invitation);
+  console.log(JSON.stringify(invitation, null, 2));
   console.log(BASE_URI + '/initiation?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
 }
 

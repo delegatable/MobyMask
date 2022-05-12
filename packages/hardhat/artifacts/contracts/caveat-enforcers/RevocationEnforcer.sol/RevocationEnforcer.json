@@ -4,6 +4,25 @@
   "sourceName": "contracts/caveat-enforcers/RevocationEnforcer.sol",
   "abi": [
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "principal",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        }
+      ],
+      "name": "DelegationTriggered",
+      "type": "event"
+    },
+    {
       "inputs": [
         {
           "components": [
