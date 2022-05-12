@@ -12,7 +12,8 @@ exports.generateUtil = function generateUtil (contractInfo) {
   }
 }
 
-exports.recoverSigner = function recoverSigner (signedDelegation, contractInfo) {
+exports.recoverSigner = exports.recoverDelegationSigner;
+exports.recoverDelegationSigner = function recoverDelegationSigner (signedDelegation, contractInfo) {
   const { chainId, verifyingContract, name } = contractInfo;
   types.domain.chainId = chainId;
   types.domain.verifyingContract = verifyingContract;
@@ -24,6 +25,38 @@ exports.recoverSigner = function recoverSigner (signedDelegation, contractInfo) 
     version: 'V4',
   });
   return signer;
+}
+
+exports.recoverInvocationSigner = function recoverInvocationSigner (signedInvocation, contractInfo) {
+  const { chainId, verifyingContract, name } = contractInfo;
+  types.domain.chainId = chainId;
+  types.domain.verifyingContract = verifyingContract;
+  const typedMessage = createTypedMessage(verifyingContract, signedInvocation.delegation, 'Invocations', name, chainId);
+
+  const signer = sigUtil.recoverTypedSignature({
+    data: typedMessage.data,
+    signature: signedInvocation.signature,
+    version: 'V4',
+  });
+  return signer;
+}
+
+exports.signInvocation = function signInvocation(invocation, privateKey, contractInfo) {
+  const { chainId, verifyingContract, name } = contractInfo;
+  const typedMessage = createTypedMessage(verifyingContract, invocation, 'Invocations', name, chainId);
+
+  const signature = sigUtil.signTypedData({
+    privateKey: fromHexString(privateKey.indexOf('0x') === 0 ? privateKey.substring(2) : privateKey),
+    data: typedMessage.data,
+    version: 'V4',
+  });
+
+  const signedInvocation = {
+    signature,
+    invocation,
+  }
+
+  return signedInvocation;
 }
 
 exports.signDelegation = function signDelegation (delegation, privateKey, contractInfo) {
