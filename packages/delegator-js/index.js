@@ -32,7 +32,7 @@ type Invitation = {
   key: string,
 }
 */
-
+exports.recoverSigner = recoverSigner;
 exports.validateInvitation = async function validateInvitation (invitation, provider) {
 
   const { chainId } = await provider.getNetwork();
