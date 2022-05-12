@@ -1,17 +1,9 @@
 import { ethers } from "ethers";
 const types = require('./types')
 const createTypedMessage = require('./createTypedMessage');
-const sigUtil = require('eth-sig-util');
-const {
-  TypedDataUtils,
-  recoverTypedSignature_v4,
-} = sigUtil;
+const sigUtil = require('@metamask/eth-sig-util');
 const { chainId, address } = require('./config.json');
-const { abi, bytecode } = require('./artifacts');
-const {
-  typedSignatureHash,
-  encodeData,
-} = TypedDataUtils;
+const { abi } = require('./artifacts');
 const CONTRACT_NAME = 'PhisherRegistry';
 
 types.domain.chainId = chainId;
@@ -53,9 +45,10 @@ export async function validateInvitation (invitation, provider) {
 
     console.log('submitting typed message as data', typedMessage);
 
-    const signer = recoverTypedSignature_v4({
+    const signer = sigUtil.recoverTypedSignature({
       data: typedMessage.data,
-      sig: signedDelegation.signature,
+      signature: signedDelegation.signature,
+      version: 'V4',
     });
     console.log('recovered signer', signer);
 
