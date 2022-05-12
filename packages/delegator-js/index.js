@@ -8,7 +8,10 @@ const CONTRACT_NAME = 'PhisherRegistry';
 exports.generateUtil = function generateUtil (contractInfo) {
   return {
     recoverSigner: (signedDelegation) => exports.recoverSigner(signedDelegation, contractInfo),
+    recoverDelegationSigner: (signedDelegation) => exports.recoverDelegationSigner(signedDelegation, contractInfo),
     signDelegation: (delegation, privateKey) => exports.signDelegation(delegation, privateKey, contractInfo),
+    recoverInvocationSigner: (signedInvocation) => exports.recoverInvocationSigner(signedInvocation, contractInfo),
+    signInvocation: (invocation, privateKey) => exports.signInvocation(invocation, privateKey, contractInfo),
   }
 }
 
