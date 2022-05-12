@@ -49,17 +49,6 @@ exports.validateInvitation = async function validateInvitation (invitation, prov
       name: CONTRACT_NAME,
     });
 
-    const typedMessage = createTypedMessage(registry, signedDelegation.delegation, 'Delegation', CONTRACT_NAME, chainId);
-
-    console.log('submitting typed message as data', typedMessage);
-
-    const signer = sigUtil.recoverTypedSignature({
-      data: typedMessage.data,
-      signature: signedDelegation.signature,
-      version: 'V4',
-    });
-    console.log('recovered signer', signer);
-
     const delegate = signedDelegations[signedDelegations.length - 1].delegation.delegate;
     if (wallet.address.toLowerCase() !== delegate.toLowerCase()) {
       throw new Error ('Invalid invitation, delegate does not match provided key.');
@@ -71,7 +60,6 @@ exports.validateInvitation = async function validateInvitation (invitation, prov
 
   }
 
-  console.log('All is well! Invitation is valid.');
   return !!invitation;
 }
 
