@@ -5,6 +5,7 @@ import {
   Route,
   Link,
   Routes,
+  useHistory,
   useLocation
 } from "react-router-dom";
 
@@ -16,6 +17,7 @@ export default function (props) {
   const [ invitation, setInvitation ] = useState(null);
   const [ errorMessage, setErrorMessage ] = useState(null);
   const [ loading, setLoading ] = useState(false);
+  const history = useHistory();
 
   useEffect(async () => {
     const network = await provider.getNetwork();
@@ -23,13 +25,24 @@ export default function (props) {
 
     if (!loading) {
       setLoading(true);
+
+
       if (!invitation) {
         try {
-          const parsedInvitation = JSON.parse(query.get("invitation"));
+          let parsedInvitation;
+          let rawLoaded = document.cookie;
+          if (rawLoaded) {
+            parsedInvitation = JSON.parse(rawLoaded);
+          }
+          if (!parsedInvitation || parsedInvitation === 'null') {
+            parsedInvitation = JSON.parse(query.get("invitation"));
+          }
           await validateInvitation(parsedInvitation, provider);
           console.dir(parsedInvitation)
           setInvitation(parsedInvitation);
+          document.cookie = query.get("invitation");
           setLoading(false);
+          history.push('/members');
         } catch (err) {
           console.error(err);
           setErrorMessage(err.message);

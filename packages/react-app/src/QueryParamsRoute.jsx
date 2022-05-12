@@ -20,7 +20,7 @@ export default function QueryParamsRouter(props) {
       <Route exact path="/">
         <Landing/>
       </Route>
-      <Route path="/initiation/">
+      <Route path="/members/">
         <Initiation provider={provider} />
       </Route>
     </Switch>

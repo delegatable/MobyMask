@@ -31,7 +31,6 @@ const openrpcDocument = require('./openrpc.json');
 const { parseOpenRPCDocument } = require("@open-rpc/schema-utils-js");
 const { Server } = require("@open-rpc/server-js");
 const openrpcServer = require("@open-rpc/server-js");
-console.dir(openrpcServer);
 const { HTTPTransport, HTTPSTransport } = openrpcServer.transports;
 
 const phisherRegistryArtifacts = require('../hardhat/artifacts/contracts/PhisherRegistry.sol/PhisherRegistry.json');
@@ -221,7 +220,7 @@ async function signDelegation () {
   }
   console.log('A SIGNED DELEGATION/INVITE LINK:');
   console.log(JSON.stringify(invitation, null, 2));
-  console.log(BASE_URI + '/initiation?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
+  console.log(BASE_URI + '/members?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
 }
 
 function fromHexString (hexString: string) {
