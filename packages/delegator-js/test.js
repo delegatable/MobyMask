@@ -1,5 +1,5 @@
 const test = require('tape');
-const { recoverSigner } = require('./validator.js');
+const { recoverSigner, signDelegation } = require('./validator.js');
 const sigUtil = require('@metamask/eth-sig-util');
 
 const address = '0xa2c5B479d1758C48c68540F554cDAeDda2340630';
@@ -136,15 +136,21 @@ const TYPED_MESSAGE = {
 
 test('recover a signature', async (t) => {
 
+  const contractInfo = {
+    chainId: 1337,
+    verifyingContract: '0x336E14B1723Dc5A57769F0aa5C409F476Ee8B333',
+    name: "PhisherRegistry",
+  }
+
   const signature = sigUtil.signTypedData({
     privateKey: fromHexString(PRIV_KEY),
     data: TYPED_MESSAGE.data,
     version: 'V4'
   });
-  const signedDelegation = {
-    signature,
-    delegation: TYPED_MESSAGE.data.message,
-  }
+
+  // exports.signDelegation = async function signDelegation (delegation, privateKey, contractInfo) {
+  // const { chainId, verifyingContract, name } = contractInfo;
+  const signedDelegation = signDelegation(TYPED_MESSAGE.data.message, PRIV_KEY, contractInfo);
 
   const recovered = recoverSigner(signedDelegation, {
     chainId: 1337,
