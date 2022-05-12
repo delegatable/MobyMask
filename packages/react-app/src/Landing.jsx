@@ -3,7 +3,7 @@ import logo from './logo.svg';
 
 function Landing() {
   return (
-    <div>
+    <div className='installSection'>
       <p>
         Get warned about phisers on the web:
       </p>

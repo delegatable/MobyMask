@@ -181,6 +181,7 @@ function createTypedMessage (yourContract, message, primaryType) {
 }
 
 function fromHexString (hexString) {
+  console.warn('from hex string', hexString)
   return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }
 

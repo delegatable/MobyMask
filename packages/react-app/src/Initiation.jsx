@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 
 import { validateInvitation } from './delegator';
+import createInvitation from './createInvitation';
 
 export default function (props) {
   const query = useQuery();
@@ -26,7 +27,6 @@ export default function (props) {
     if (!loading) {
       setLoading(true);
 
-
       if (!invitation) {
         try {
           let parsedInvitation;
@@ -36,13 +36,14 @@ export default function (props) {
           }
           if (!parsedInvitation || parsedInvitation === 'null') {
             parsedInvitation = JSON.parse(query.get("invitation"));
+            await validateInvitation(parsedInvitation, provider);
+            document.cookie = query.get("invitation");
+            history.push('/members');
           }
-          await validateInvitation(parsedInvitation, provider);
+
           console.dir(parsedInvitation)
           setInvitation(parsedInvitation);
-          document.cookie = query.get("invitation");
           setLoading(false);
-          history.push('/members');
         } catch (err) {
           console.error(err);
           setErrorMessage(err.message);
@@ -65,6 +66,8 @@ export default function (props) {
     }
   }
 
+  const inviteView = generaetInviteView(invitation);
+
   return (
     <div>
       <h1>
@@ -76,12 +79,35 @@ export default function (props) {
           <input type="text" placeholder="@phisher_person" />
           <button>Report twitter phisher</button>
         </div>
-        <button>Copy new invite link</button>
+        { inviteView }
       </div>
 
       <Landing />
     </div>
   )
+}
+
+function generaetInviteView (invitation) {
+  const tier = invitation.signedDelegations.length;
+
+  if (tier < 4) {
+    return (
+      <div>
+        <p>You are a tier {invitation.signedDelegations.length} invitee. This means you can invite up to {4-tier} additional tiers of members.</p>
+        <button onClick={() => {
+          const newInvitation = createInvitation(invitation);
+          const inviteLink = window.location.origin + '/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
+          navigator.clipboard.writeText(inviteLink).then(function() {
+            alert('Copied to clipboard!');
+          });
+        }}>Copy new invite link</button>
+      </div> 
+    );
+  } else if (tier === 4) {
+    <div>
+      <p>You are a tier 4 member. That means you can't currently invite new members through this interface, but if this site becomes popular, we can add support for this later.</p>
+    </div> 
+  }
 }
 
 function useQuery() {

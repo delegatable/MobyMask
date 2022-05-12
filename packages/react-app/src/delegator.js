@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 const types = require('./types')
-const { recoverSigner } = require('eth-delegatable-utils');
+const delegationUtils = require('eth-delegatable-utils');
+const { recoverDelegationSigner } = delegationUtils;
 const createTypedMessage = require('./createTypedMessage');
 const sigUtil = require('@metamask/eth-sig-util');
 const { chainId, address } = require('./config.json');
@@ -42,29 +43,33 @@ export async function validateInvitation (invitation, provider) {
   const registry = await attachRegistry(wallet);
 
   for (let i = 0; i < signedDelegations.length; i++) {
+    console.log('delegation ' + i);
     const signedDelegation = signedDelegations[i];
-    const signer = recoverSigner(signedDelegation, {
+    const signer = recoverDelegationSigner(signedDelegation, {
       chainId,
       verifyingContract: registry.address,
       name: CONTRACT_NAME,
     });
+    console.log('signed by ', signer);
+    console.log('delegating to ', signedDelegation.delegation.delegate);
 
     const typedMessage = createTypedMessage(registry, signedDelegation.delegation, 'Delegation', CONTRACT_NAME, chainId);
 
-    console.log('submitting typed message as data', typedMessage);
+    if (i === 0) {
+      if (signer !== '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase()) {
+        throw new Error('invalid signer' + signer + ' instead of '+ '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase());
+      }
+    } else if (signer.toLowerCase() !== delegate) {
+      const delegate = signedDelegations[i - 1].delegation.delegate.toLowerCase();
+      throw new Error('Invalid invitation chain');
+    }
 
-    const delegate = signedDelegations[signedDelegations.length - 1].delegation.delegate;
     if (wallet.address.toLowerCase() !== delegate.toLowerCase()) {
       throw new Error ('Invalid invitation, delegate does not match provided key.');
     }
 
-    if (signer !== '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase()) {
-      throw new Error('invalid signer' + signer + ' instead of '+ '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase());
-    }
-
   }
 
-  console.log('All is well! Invitation is valid.');
   return !!invitation;
 }
 
