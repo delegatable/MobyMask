@@ -60,10 +60,10 @@ export async function validateInvitation (invitation, provider) {
         throw new Error('invalid signer' + signer + ' instead of '+ '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase());
       }
     } else if (signer.toLowerCase() !== delegate) {
-      const delegate = signedDelegations[i - 1].delegation.delegate.toLowerCase();
       throw new Error('Invalid invitation chain');
     }
 
+    const delegate = signedDelegations[i - 1].delegation.delegate.toLowerCase();
     if (wallet.address.toLowerCase() !== delegate.toLowerCase()) {
       throw new Error ('Invalid invitation, delegate does not match provided key.');
     }

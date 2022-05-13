@@ -9,6 +9,7 @@ import {
   useLocation
 } from "react-router-dom";
 
+import PhishingReport from './PhishingReport';
 import { validateInvitation } from './delegator';
 import createInvitation from './createInvitation';
 
@@ -77,11 +78,7 @@ export default function (props) {
       <div className="controlBoard">
         { inviteView }
 
-        <div className='box'>
-          <h3>Report a phishing attempt (coming soon)</h3>
-          <input type="text" placeholder="@phisher_person" />
-          <button>Report twitter phisher</button>
-        </div>
+        <PhishingReport invitation={invitation}/>
 
         <div className='box'>
           <h3>Endorse a benevolent entity (coming soon)</h3>
