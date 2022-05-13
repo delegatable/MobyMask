@@ -38,9 +38,9 @@ export default function (props) {
             parsedInvitation = JSON.parse(query.get("invitation"));
             await validateInvitation(parsedInvitation, provider);
             document.cookie = query.get("invitation");
-            history.push('/members');
           }
 
+          history.push('/members');
           console.dir(parsedInvitation)
           setInvitation(parsedInvitation);
           setLoading(false);
