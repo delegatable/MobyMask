@@ -15,7 +15,7 @@ const {
 } = TypedDataUtils;
 const CONTRACT_NAME = 'PhisherRegistry';
 
-const BASE_URI = 'http://localhost:3000';
+const BASE_URI = 'https://mobymask.com/#';
 
 // For reads, clients can hit the node directly.
 /* so for now, we just care about this server being able to relay transactions.
