@@ -7,7 +7,7 @@ import MetaMaskOnboarding from '@metamask/onboarding'
 import { Alert, Button, Col, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
+import { HashRouter as Router, Link, Route, Switch } from "react-router-dom";
 import Web3Modal from "web3modal";
 import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
