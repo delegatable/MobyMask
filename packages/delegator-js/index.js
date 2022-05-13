@@ -34,7 +34,7 @@ exports.recoverInvocationSigner = function recoverInvocationSigner (signedInvoca
   const { chainId, verifyingContract, name } = contractInfo;
   types.domain.chainId = chainId;
   types.domain.verifyingContract = verifyingContract;
-  const typedMessage = createTypedMessage(verifyingContract, signedInvocation.delegation, 'Invocations', name, chainId);
+  const typedMessage = createTypedMessage(verifyingContract, signedInvocation.invocations, 'Invocations', name, chainId);
 
   const signer = sigUtil.recoverTypedSignature({
     data: typedMessage.data,
@@ -56,7 +56,7 @@ exports.signInvocation = function signInvocation(invocation, privateKey, contrac
 
   const signedInvocation = {
     signature,
-    invocation,
+    invocations: invocation,
   }
 
   return signedInvocation;
