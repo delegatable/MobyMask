@@ -75,14 +75,25 @@ export default function (props) {
       </h1>
 
       <div className="controlBoard">
-        <div>
+        { inviteView }
+
+        <div className='box'>
+          <h3>Report a phishing attempt (coming soon)</h3>
           <input type="text" placeholder="@phisher_person" />
           <button>Report twitter phisher</button>
         </div>
-        { inviteView }
+
+        <div className='box'>
+          <h3>Endorse a benevolent entity (coming soon)</h3>
+        </div>
+
+        <div className='box'>
+          <h3>Review your invites and their reports. (Coming soon!)</h3>
+        </div>
+
+        <Landing />
       </div>
 
-      <Landing />
     </div>
   )
 }
@@ -92,7 +103,7 @@ function generaetInviteView (invitation) {
 
   if (tier < 4) {
     return (
-      <div>
+      <div className='box'>
         <p>You are a tier {invitation.signedDelegations.length} invitee. This means you can invite up to {4-tier} additional tiers of members.</p>
         <button onClick={() => {
           const newInvitation = createInvitation(invitation);

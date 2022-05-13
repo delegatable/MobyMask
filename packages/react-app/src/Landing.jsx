@@ -3,9 +3,9 @@ import logo from './logo.svg';
 
 function Landing() {
   return (
-    <div className='installSection'>
+    <div className='box'>
       <p>
-        Get warned about phisers on the web:
+        Get warned about phishers on the web:
       </p>
       <button className='installButton' disabled>Install the Web Extension (coming soon!)</button>
     </div>
