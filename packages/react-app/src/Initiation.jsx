@@ -78,7 +78,7 @@ export default function (props) {
       <div className="controlBoard">
         { inviteView }
 
-        <PhishingReport invitation={invitation}/>
+        <PhishingReport invitation={invitation} provider={provider}/>
 
         <div className='box'>
           <h3>Endorse a benevolent entity (coming soon)</h3>

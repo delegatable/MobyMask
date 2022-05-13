@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import reportPhishers from './reportPhishers';
 
 export default function (props ) {
-  const { invitation } = props;
+  const { invitation, provider } = props;
   const [ phisher, setPhisher ] = useState(null);
   const [ phishers, setPhishers ] = useState([]);
   const [ loaded, setLoaded ] = useState(false);
@@ -44,7 +45,8 @@ export default function (props ) {
               return (<li key={index}>{phisher}</li>);
             })}
           </ol>
-          <button onClick={() => {
+          <button onClick={async () => {
+            await reportPhishers(phishers, provider, invitation);
             localStorage.clear();
             setPhishers([]);
           }}>Submit batch to blockchain</button>
