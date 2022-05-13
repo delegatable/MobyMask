@@ -19,6 +19,7 @@ exports.recoverSigner = exports.recoverDelegationSigner;
 exports.recoverDelegationSigner = function recoverDelegationSigner (signedDelegation, contractInfo) {
   const { chainId, verifyingContract, name } = contractInfo;
   types.domain.chainId = chainId;
+  types.domain.name = name;
   types.domain.verifyingContract = verifyingContract;
   const typedMessage = createTypedMessage(verifyingContract, signedDelegation.delegation, 'Delegation', name, chainId);
 
@@ -33,6 +34,7 @@ exports.recoverDelegationSigner = function recoverDelegationSigner (signedDelega
 exports.recoverInvocationSigner = function recoverInvocationSigner (signedInvocation, contractInfo) {
   const { chainId, verifyingContract, name } = contractInfo;
   types.domain.chainId = chainId;
+  types.domain.name = name;
   types.domain.verifyingContract = verifyingContract;
   const typedMessage = createTypedMessage(verifyingContract, signedInvocation.invocations, 'Invocations', name, chainId);
 

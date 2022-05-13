@@ -1,7 +1,7 @@
 const typedMessage = {
   primaryType: 'Delegation',
   domain: {
-    name: 'DelegatorTest',
+    name: 'PhisherRegistry',
     version: '1',
   },
 
