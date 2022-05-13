@@ -69,7 +69,7 @@ if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 //
 // attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
 // Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
-const testMobyNet = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+// const testMobyNet = new ethers.providers.JsonRpcProvider("http://localhost:8545");
 const scaffoldEthProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider("https://rpc.scaffoldeth.io:48544")
   : null;
@@ -196,7 +196,7 @@ function App(props) {
       </header>
 
       <Router>
-        <QueryParamsRoute provider={testMobyNet}/>
+        <QueryParamsRoute provider={injectedProvider}/>
       </Router>
 
       <div className='footer'>
