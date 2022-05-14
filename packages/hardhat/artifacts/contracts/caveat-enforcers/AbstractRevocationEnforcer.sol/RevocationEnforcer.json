@@ -178,6 +178,32 @@
         {
           "components": [
             {
+              "internalType": "bytes32",
+              "name": "delegationHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IntentionToRevoke",
+          "name": "_input",
+          "type": "tuple"
+        }
+      ],
+      "name": "GET_INTENTIONTOREVOKE_PACKETHASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
               "components": [
                 {
                   "components": [
@@ -620,6 +646,44 @@
         {
           "components": [
             {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "delegationHash",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IntentionToRevoke",
+              "name": "intentionToRevoke",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SignedIntentionToRevoke",
+          "name": "_input",
+          "type": "tuple"
+        }
+      ],
+      "name": "GET_SIGNEDINTENTIONTOREVOKE_PACKETHASH",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
               "components": [
                 {
                   "components": [
@@ -1011,6 +1075,32 @@
         {
           "components": [
             {
+              "internalType": "bytes32",
+              "name": "delegationHash",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IntentionToRevoke",
+          "name": "intentionToRevoke",
+          "type": "tuple"
+        }
+      ],
+      "name": "getIntentionToRevokeTypedDataHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
               "components": [
                 {
                   "components": [
@@ -1315,6 +1405,30 @@
           "internalType": "struct SignedDelegation",
           "name": "signedDelegation",
           "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "delegationHash",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IntentionToRevoke",
+              "name": "intentionToRevoke",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SignedIntentionToRevoke",
+          "name": "signedIntentionToRevoke",
+          "type": "tuple"
         }
       ],
       "name": "revokeDelegation",
@@ -1372,6 +1486,44 @@
         }
       ],
       "name": "verifyDelegationSignature",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "delegationHash",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IntentionToRevoke",
+              "name": "intentionToRevoke",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct SignedIntentionToRevoke",
+          "name": "signedIntentionToRevoke",
+          "type": "tuple"
+        }
+      ],
+      "name": "verifyIntentionToRevokeSignature",
       "outputs": [
         {
           "internalType": "address",

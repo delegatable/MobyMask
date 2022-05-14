@@ -21,13 +21,11 @@ abstract contract RevocationEnforcer is CaveatEnforcer, Delegatable {
     SignedIntentionToRevoke calldata signedIntentionToRevoke
   ) public {
     address signer = verifyDelegationSignature(signedDelegation);
-    address sender = _msgSender();
-    require(signer == sender, "Only the signer can revoke a delegation");
+    address revocationSigner = verifyIntentionToRevokeSignature(signedIntentionToRevoke);
+    require(signer == revocationSigner, "Only the signer can revoke a delegation");
+
     bytes32 delegationHash = GET_SIGNEDDELEGATION_PACKETHASH(signedDelegation);
-
-    bytes32 revokeIntentHash = verifyIntentionToRevokeSignature(signedIntentionToRevoke);
-    address revoker = verifyIntentionToRevokeSignature(signedIntentionToRevoke);
-
+    console.log("I guess the %s is equal to %s", signer, revocationSigner);
     isRevoked[delegationHash] = true;
   }
 

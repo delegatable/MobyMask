@@ -378,6 +378,7 @@ describe(CONTRACT_NAME, function () {
       }],
     };
     const signedInvocation = util.signInvocation(invocationMessage, account1PrivKey);
+    console.log('now this attempted-couped account 1 tries to do their thing');
     const res = await yourContract.connect(addr2).invoke([signedInvocation]);
     expect(await yourContract.connect(addr2).isPhisher(targetString)).to.equal(true);
   });
