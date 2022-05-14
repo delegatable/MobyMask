@@ -6,6 +6,7 @@ const {
 } = sigUtil;
 
 const { abi } = require('./artifacts');
+const typedMessage = require('./types');
 const CONTRACT_NAME = 'PhisherRegistry';
 
 // Util curries contract info into a reusable utility
@@ -29,8 +30,7 @@ exports.recoverSigner = exports.recoverDelegationSigner;
 
 exports.createSignedDelegationHash = function createDelegationHash (signedDelegation, contractInfo) {
   const { verifyingContract, name, chainId } = contractInfo;
-  const typedMessage = createTypedMessage(verifyingContract, signedDelegation, 'SignedDelegation', name, chainId);
-  const hash = TypedDataUtils.eip712Hash(typedMessage, 'V4');
+  const hash = TypedDataUtils.hashStruct('SignedDelegation', signedDelegation, types.types, 'V4');
   return hash;
 }
 
@@ -54,7 +54,7 @@ exports.recoverInvocationSigner = function recoverInvocationSigner (signedInvoca
   types.domain.chainId = chainId;
   types.domain.name = name;
   types.domain.verifyingContract = verifyingContract;
-  const typedMessage = createTypedMessage(verifyingContract, signedInvocation.invocations, 'Invocations', name, chainId);
+  const typedMessage = cdomainreateTypedMessage(verifyingContract, signedInvocation.invocations, 'Invocations', name, chainId);
 
   const signer = sigUtil.recoverTypedSignature({
     data: typedMessage.data,

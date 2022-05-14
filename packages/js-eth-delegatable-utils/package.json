@@ -1,10 +1,10 @@
 {
   "name": "eth-delegatable-utils",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js"
   },
   "author": "",
   "license": "ISC",

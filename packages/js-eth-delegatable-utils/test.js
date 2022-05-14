@@ -1,6 +1,7 @@
 const test = require('tape');
-const { recoverSigner, signDelegation } = require('./validator.js');
+const { recoverSigner, signDelegation } = require('./index.js');
 const sigUtil = require('@metamask/eth-sig-util');
+console.dir(recoverSigner);
 
 const address = '0xa2c5B479d1758C48c68540F554cDAeDda2340630';
 const PRIV_KEY = 'acc9d5cfcfa55e0e333e7eeed12ef4157627ec7de87ab7944ed97fcd481d8b51';

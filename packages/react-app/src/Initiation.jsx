@@ -168,26 +168,14 @@ export default function (props) {
                   const signedDelegation = signedDelegations[signedDelegations.length - 1];
                   console.log('registry', registry);
                   console.log('populate tx', registry.populateTransaction);
-                  const desiredTx = await registry.populateTransaction.revokeDelegation(signedDelegation);
-                  const invocation = {
-                    transaction: {
-                      to: address,
-                      data: desiredTx.data,
-                      gasLimit: 20000,
-                    },
-                    authority: [],
+
+                  const delegationHash = util.createSignedDelegationHash(signedDelegation);
+                  const intendedRevocation = {
+                    delegationHash,
                   }
+                  const signedIntendedRevocation = util.signRevocation(intendedRevocation, invitation.key);
 
-                  const queue = Math.floor(Math.random() * 100000000);
-                  const signedInvocations = util.signInvocation({
-                    batch: [invocation],
-                    replayProtection: {
-                      nonce: 1,
-                      queue,
-                    }
-                  }, invitation.key);
-
-                  const block = await registry.invoke([signedInvocations]);
+                  const block = await registry.revokeDelegation(signedDelegation, signedIntendedRevocation);
                   console.log('revocation tx mined', block);
 
                   const newInvites = [...invitations];
