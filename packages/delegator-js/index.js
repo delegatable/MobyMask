@@ -8,10 +8,15 @@ const CONTRACT_NAME = 'PhisherRegistry';
 exports.generateUtil = function generateUtil (contractInfo) {
   return {
     recoverSigner: (signedDelegation) => exports.recoverSigner(signedDelegation, contractInfo),
-    recoverDelegationSigner: (signedDelegation) => exports.recoverDelegationSigner(signedDelegation, contractInfo),
+
     signDelegation: (delegation, privateKey) => exports.signDelegation(delegation, privateKey, contractInfo),
-    recoverInvocationSigner: (signedInvocation) => exports.recoverInvocationSigner(signedInvocation, contractInfo),
+    recoverDelegationSigner: (signedDelegation) => exports.recoverDelegationSigner(signedDelegation, contractInfo),
+
     signInvocation: (invocation, privateKey) => exports.signInvocation(invocation, privateKey, contractInfo),
+    recoverInvocationSigner: (signedInvocation) => exports.recoverInvocationSigner(signedInvocation, contractInfo),
+
+    signRevocation: (revocation, privateKey) => exports.signRevocation(revocation, privateKey, contractInfo),
+    recoverRevocationSignature: (signedRevocation) => exports.recoverRevocationSignature(signedRevocation, contractInfo),
   }
 }
 
@@ -80,6 +85,39 @@ exports.signDelegation = function signDelegation (delegation, privateKey, contra
   }
 
   return signedDelegation;
+}
+
+exports.signRevocation = function signRevocation (revocation, privateKey, contractInfo) {
+  const { chainId, verifyingContract, name } = contractInfo;
+  const typedMessage = createTypedMessage(verifyingContract, revocation, 'IntentionToRevoke', name, chainId);
+
+  const signature = sigUtil.signTypedData({
+    privateKey: fromHexString(privateKey.indexOf('0x') === 0 ? privateKey.substring(2) : privateKey),
+    data: typedMessage.data,
+    version: 'V4',
+  });
+
+  const signedRevocation = {
+    signature,
+    revocation,
+  }
+
+  return signedRevocation;
+}
+
+exports.recoverRevocationSignature = function recoverRevocationSignature (signedRevocation, contractInfo) {
+  const { chainId, verifyingContract, name } = contractInfo;
+  types.domain.chainId = chainId;
+  types.domain.name = name;
+  types.domain.verifyingContract = verifyingContract;
+  const typedMessage = createTypedMessage(verifyingContract, signedRevocation.revocation, 'IntentionToRevoke', name, chainId);
+
+  const signer = sigUtil.recoverTypedSignature({
+    data: typedMessage.data,
+    signature: signedRevocation.signature,
+    version: 'V4',
+  });
+  return signer;
 }
 
 function fromHexString (hexString) {
