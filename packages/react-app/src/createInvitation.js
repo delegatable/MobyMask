@@ -26,7 +26,7 @@ export default function createInvitation (invitation) {
     }]
   }
 
-  const newSignedDelegation = signDelegation(delegation, delegate.privateKey, {
+  const newSignedDelegation = signDelegation(delegation, key, {
     chainId,
     verifyingContract: address,
     name: CONTRACT_NAME,

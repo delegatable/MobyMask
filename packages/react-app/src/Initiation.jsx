@@ -41,14 +41,11 @@ export default function (props) {
   // Get registry
   useEffect(() => {
     if (registry) {
-      console.log('we have a registry already right?')
       return;
     }
 
-    console.log('creating registry')
     createRegistry()
     .then((_registry) => {
-      console.log('assigning registry ')
       setRegistry(_registry);
     }).catch(console.error);
   });
@@ -56,7 +53,6 @@ export default function (props) {
   useEffect(() => {
     async function checkInvitations () {
       const network = await provider.getNetwork();
-      console.log('network is ', network);
 
       if (!loading) {
         setLoading(true);
@@ -75,7 +71,6 @@ export default function (props) {
             }
 
             history.push('/members');
-            console.dir(parsedInvitation)
             setInvitation(parsedInvitation);
             setLoading(false);
           } catch (err) {
@@ -161,13 +156,11 @@ export default function (props) {
           <h3>Outstanding Invitations</h3>
           { invitations.map((_invitation, index) => {
             return (
-              <div>
+              <div key={index}>
                 <span>{ _invitation.petName }</span>
                 <button onClick={async () => {
                   const { signedDelegations } = _invitation.invitation;
                   const signedDelegation = signedDelegations[signedDelegations.length - 1];
-                  console.log('registry', registry);
-                  console.log('populate tx', registry.populateTransaction);
 
                   const delegationHash = util.createSignedDelegationHash(signedDelegation);
                   const intendedRevocation = {
@@ -176,7 +169,6 @@ export default function (props) {
                   const signedIntendedRevocation = util.signRevocation(intendedRevocation, invitation.key);
 
                   const block = await registry.revokeDelegation(signedDelegation, signedIntendedRevocation);
-                  console.log('revocation tx mined', block);
 
                   const newInvites = [...invitations];
                   newInvites.splice(index, 1);
