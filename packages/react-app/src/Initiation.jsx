@@ -14,7 +14,13 @@ const types = require('./types')
 const { generateUtil } = require('eth-delegatable-utils');
 const { abi } = require('./artifacts');
 const { chainId, address, name } = require('./config.json');
+import createRegistry from './createRegistry';
 const CONTRACT_NAME = name;
+const util = generateUtil({
+  chainId,
+  verifyingContract: address,
+  name: CONTRACT_NAME,
+});
 
 import PhishingReport from './PhishingReport';
 import PhisherCheck from './PhisherCheck';
@@ -28,17 +34,23 @@ export default function (props) {
   const [ errorMessage, setErrorMessage ] = useState(null);
   const [ loading, setLoading ] = useState(false);
   const [ registry, setRegistry ] = useState(null);
+  const [ invitations, setInvitations ] = useState([]);
+  const [ loaded, setLoaded ] = useState(false); // For loading invitations
   const history = useHistory();
 
   // Get registry
   useEffect(() => {
     if (registry) {
+      console.log('we have a registry already right?')
       return;
     }
-    const registryContract = new ethers.Contract(address, abi, provider);
-    registryContract.deployed().then((registry) => {
-      setRegistry(registry);
-    });
+
+    console.log('creating registry')
+    createRegistry()
+    .then((_registry) => {
+      console.log('assigning registry ')
+      setRegistry(_registry);
+    }).catch(console.error);
   });
 
   useEffect(() => {
@@ -75,7 +87,21 @@ export default function (props) {
     }
 
     checkInvitations().catch(console.error);
-  })
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      return;
+    }
+    try {
+      const rawStorage = localStorage.getItem('outstandingInvitations');
+      let loadedInvitations = JSON.parse(rawStorage) || [];
+      setInvitations(loadedInvitations);
+      setLoaded(true);
+    } catch (err) {
+      console.error(err);
+    }
+  });
 
   if (!invitation) {
     if (errorMessage) {
@@ -91,7 +117,18 @@ export default function (props) {
     }
   }
 
-  const inviteView = generaetInviteView(invitation);
+  const inviteView = generateInviteView(invitation, (invitation) => {
+    if (invitation) {
+      console.log(`appending ${invitation.petName} to outstanding invites`);
+      const newInvites = [...invitations, invitation];
+      localStorage.setItem('outstandingInvitations', JSON.stringify(newInvites));
+      setInvitations(newInvites);
+    } 
+  });
+
+  if (!registry) {
+    return <p>Loading. Or connect to the Goerli test network. This is a hackathon project, please forgive the rough edges.</p>
+  }
 
   return (
     <div>
@@ -100,7 +137,6 @@ export default function (props) {
       </h1>
 
       <div className="controlBoard">
-        { inviteView }
 
         <PhishingReport invitation={invitation} provider={provider}/>
 
@@ -119,6 +155,51 @@ export default function (props) {
           }
         }}/>
 
+        { inviteView }
+
+        <div className='box'>
+          <h3>Outstanding Invitations</h3>
+          { invitations.map((_invitation, index) => {
+            return (
+              <div>
+                <span>{ _invitation.petName }</span>
+                <button onClick={async () => {
+                  const { signedDelegations } = _invitation.invitation;
+                  const signedDelegation = signedDelegations[signedDelegations.length - 1];
+                  console.log('registry', registry);
+                  console.log('populate tx', registry.populateTransaction);
+                  const desiredTx = await registry.populateTransaction.revokeDelegation(signedDelegation);
+                  const invocation = {
+                    transaction: {
+                      to: address,
+                      data: desiredTx.data,
+                      gasLimit: 20000,
+                    },
+                    authority: [],
+                  }
+
+                  const queue = Math.floor(Math.random() * 100000000);
+                  const signedInvocations = util.signInvocation({
+                    batch: [invocation],
+                    replayProtection: {
+                      nonce: 1,
+                      queue,
+                    }
+                  }, invitation.key);
+
+                  const block = await registry.invoke([signedInvocations]);
+                  console.log('revocation tx mined', block);
+
+                  const newInvites = [...invitations];
+                  newInvites.splice(index, 1);
+                  localStorage.setItem('outstandingInvitations', JSON.stringify(newInvites));
+                  setInvitations(newInvites);
+                }}>Revoke</button>
+              </div>
+            )
+          })}
+        </div>
+
         <div className='box'>
           <h3>Endorse a benevolent entity (coming soon)</h3>
         </div>
@@ -134,7 +215,7 @@ export default function (props) {
   )
 }
 
-function generaetInviteView (invitation) {
+function generateInviteView(invitation, addInvitation) {
   const tier = invitation.signedDelegations.length;
 
   if (tier < 4) {
@@ -142,10 +223,17 @@ function generaetInviteView (invitation) {
       <div className='box'>
         <p>You are a tier {invitation.signedDelegations.length} invitee. This means you can invite up to {4-tier} additional tiers of members.</p>
         <button onClick={() => {
+          const petName = prompt('Who is this invitation for (for your personal use only, so you can view their reports and revoke the invitation)?');
           const newInvitation = createInvitation(invitation);
           const inviteLink = window.location.origin + '/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
           navigator.clipboard.writeText(inviteLink).then(function() {
             alert('Copied to clipboard!');
+            if (addInvitation) {
+              addInvitation({
+                petName,
+                invitation: newInvitation,
+              });
+            }
           });
         }}>Copy new invite link</button>
       </div> 

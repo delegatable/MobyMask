@@ -5,11 +5,11 @@ const { chainId, address, name } = require('./config.json');
 const CONTRACT_NAME = name;
 
 export default async function createRegistry () {
-  const { key, signedDelegations } = invitation;
-
   const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
   const wallet = web3Provider.getSigner();
+  console.log('made wallet, attaching registry');
   const registry = await attachRegistry(wallet);
+  console.log('there it is', registry);
   return registry;
 }
 
