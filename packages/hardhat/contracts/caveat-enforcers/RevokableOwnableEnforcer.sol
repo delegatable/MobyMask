@@ -18,15 +18,12 @@ abstract contract RevokableOwnableEnforcer is CaveatEnforcer, Delegatable {
 
     // Owner methods are not delegatable in this contract:
     bytes4 targetSig = bytes4(transaction.data[0:4]);
+
     // transferOwnership(address newOwner)
-    if (targetSig == 0xf2fde38b) {
-      return false;
-    }
+    require(targetSig != 0xf2fde38b, "transferOwnership is not delegatable");
 
     // renounceOwnership() 
-    if (targetSig == 0x715018a6) {
-      return false;
-    }
+    require(targetSig != 0x79ba79d8, "renounceOwnership is not delegatable");
 
     return true;
   }

@@ -272,7 +272,7 @@ describe(CONTRACT_NAME, function () {
       const res = await yourContract.connect(addr2).invoke([signedInvocation]);
     } catch (err) {
       // Should not be permitted:
-      expect(err.message).to.include('Delegation has been revoked');
+      expect(err.message).to.include('not delegatable');
     }
 
     const finalOwner = await yourContract.owner();
