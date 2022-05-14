@@ -52,6 +52,13 @@ const typedMessage = {
       { name: 'delegation', type: 'Delegation' },
       { name: 'signature', type: 'bytes' },
     ],
+    IntentionToRevoke: [
+      { name: 'delegationHash', type: 'bytes32' },
+    ],
+    SignedIntentionToRevoke: [
+      { name: 'signature', type: 'bytes' },
+      { name: 'intentionToRevoke', type: 'IntentionToRevoke' },
+    ]
   }
 };
 
