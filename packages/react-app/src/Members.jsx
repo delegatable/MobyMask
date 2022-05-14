@@ -27,7 +27,7 @@ import PhisherCheck from './PhisherCheck';
 import { validateInvitation } from './delegator';
 import createInvitation from './createInvitation';
 
-export default function (props) {
+export default function Members (props) {
   const query = useQuery();
   const { provider } = props;
   const [ invitation, setInvitation ] = useState(null);

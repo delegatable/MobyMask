@@ -6,7 +6,7 @@ import {
   Switch,
   useLocation
 } from "react-router-dom";
-import Initiation from './Initiation';
+import Members from './Initiation';
 
 // Routes
 import Landing from './Landing';
@@ -21,7 +21,7 @@ export default function QueryParamsRouter(props) {
         <Landing/>
       </Route>
       <Route path="/members/">
-        <Initiation provider={provider} />
+        <Members provider={provider} />
       </Route>
     </Switch>
   );
