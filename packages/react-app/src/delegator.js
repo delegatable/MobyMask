@@ -4,9 +4,9 @@ const delegationUtils = require('eth-delegatable-utils');
 const { recoverDelegationSigner } = delegationUtils;
 const createTypedMessage = require('./createTypedMessage');
 const sigUtil = require('@metamask/eth-sig-util');
-const { chainId, address } = require('./config.json');
+const { chainId, address, name } = require('./config.json');
 const { abi } = require('./artifacts');
-const CONTRACT_NAME = 'PhisherRegistry';
+const CONTRACT_NAME = name;
 
 types.domain.chainId = chainId;
 types.domain.verifyingContract = address;
@@ -63,7 +63,7 @@ export async function validateInvitation (invitation, provider) {
       throw new Error('Invalid invitation chain');
     }
 
-    const delegate = signedDelegations[i - 1].delegation.delegate.toLowerCase();
+    const delegate = signedDelegations[signedDelegations.length - 1].delegation.delegate.toLowerCase();
     if (wallet.address.toLowerCase() !== delegate.toLowerCase()) {
       throw new Error ('Invalid invitation, delegate does not match provided key.');
     }

@@ -7,6 +7,7 @@ import MetaMaskOnboarding from '@metamask/onboarding'
 import { Alert, Button, Col, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
+const config = require('./config.json');
 import { HashRouter as Router, Link, Route, Switch } from "react-router-dom";
 import Web3Modal from "web3modal";
 import "./App.css";
@@ -170,6 +171,8 @@ const web3Modal = new Web3Modal({
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
   const [address, setAddress] = useState();
+  const [chainId, setChainId] = useState(null);
+  const [loadingChainId, setLoadingChainId] = useState(false);
 
   if (!injectedProvider && MetaMaskOnboarding.isMetaMaskInstalled()) { 
     const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
@@ -181,6 +184,28 @@ function App(props) {
       const onboarding = new MetaMaskOnboarding();
       onboarding.startOnboarding();
     }}>Install MetaMask</button> to continue.</div>;
+  }
+
+  if (chainId && chainId !== config.chainId) {
+    console.log('asking you to switch');
+    return <div>Please switch to the {config.chainName} chain.</div>;
+    /*
+  } else if (!chainId && !loadingChainId) {
+    console.log('initiating new chain fetch')
+    useEffect(() => {
+      setLoadingChainId(true);
+      injectedProvider.getNetwork().then((network) => {
+        console.log('got network', network);
+        setChainId(network.chainId);
+        setLoadingChainId(false);
+      })
+      .catch(console.error);
+
+      return function () {
+        setLoadingChainId(false);
+      }
+    }, [injectedProvider]);
+    */
   }
 
   return (

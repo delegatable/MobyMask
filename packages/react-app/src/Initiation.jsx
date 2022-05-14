@@ -9,7 +9,15 @@ import {
   useLocation
 } from "react-router-dom";
 
+import { ethers } from "ethers";
+const types = require('./types')
+const { generateUtil } = require('eth-delegatable-utils');
+const { abi } = require('./artifacts');
+const { chainId, address, name } = require('./config.json');
+const CONTRACT_NAME = name;
+
 import PhishingReport from './PhishingReport';
+import PhisherCheck from './PhisherCheck';
 import { validateInvitation } from './delegator';
 import createInvitation from './createInvitation';
 
@@ -19,38 +27,54 @@ export default function (props) {
   const [ invitation, setInvitation ] = useState(null);
   const [ errorMessage, setErrorMessage ] = useState(null);
   const [ loading, setLoading ] = useState(false);
+  const [ registry, setRegistry ] = useState(null);
   const history = useHistory();
 
-  useEffect(async () => {
-    const network = await provider.getNetwork();
-    console.log('network is ', network);
+  // Get registry
+  useEffect(() => {
+    if (registry) {
+      return;
+    }
+    const registryContract = new ethers.Contract(address, abi, provider);
+    registryContract.deployed().then((registry) => {
+      setRegistry(registry);
+    });
+  });
 
-    if (!loading) {
-      setLoading(true);
+  useEffect(() => {
+    async function checkInvitations () {
+      const network = await provider.getNetwork();
+      console.log('network is ', network);
 
-      if (!invitation) {
-        try {
-          let parsedInvitation;
-          let rawLoaded = document.cookie;
-          if (rawLoaded) {
-            parsedInvitation = JSON.parse(rawLoaded);
+      if (!loading) {
+        setLoading(true);
+
+        if (!invitation) {
+          try {
+            let parsedInvitation;
+            let rawLoaded = document.cookie;
+            if (rawLoaded) {
+              parsedInvitation = JSON.parse(rawLoaded);
+            }
+            if (!parsedInvitation || parsedInvitation === 'null') {
+              parsedInvitation = JSON.parse(query.get("invitation"));
+              await validateInvitation(parsedInvitation, provider);
+              document.cookie = query.get("invitation");
+            }
+
+            history.push('/members');
+            console.dir(parsedInvitation)
+            setInvitation(parsedInvitation);
+            setLoading(false);
+          } catch (err) {
+            console.error(err);
+            setErrorMessage(err.message);
           }
-          if (!parsedInvitation || parsedInvitation === 'null') {
-            parsedInvitation = JSON.parse(query.get("invitation"));
-            await validateInvitation(parsedInvitation, provider);
-            document.cookie = query.get("invitation");
-          }
-
-          history.push('/members');
-          console.dir(parsedInvitation)
-          setInvitation(parsedInvitation);
-          setLoading(false);
-        } catch (err) {
-          console.error(err);
-          setErrorMessage(err.message);
         }
       }
     }
+
+    checkInvitations().catch(console.error);
   })
 
   if (!invitation) {
@@ -79,6 +103,21 @@ export default function (props) {
         { inviteView }
 
         <PhishingReport invitation={invitation} provider={provider}/>
+
+        <PhisherCheck checkPhisher={async (name) => {
+          console.log('checking if phisher', name);
+          try {
+            const result = await registry.isPhisher('TWT:' + name.toLowerCase());
+            console.log('result is ', result);
+            if (result) {
+              return `${name} is an accused phisher.`;
+            } else {
+              return `${name} is not a registered phisher.`;
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        }}/>
 
         <div className='box'>
           <h3>Endorse a benevolent entity (coming soon)</h3>

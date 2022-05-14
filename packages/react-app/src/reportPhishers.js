@@ -1,9 +1,9 @@
 import { ethers } from "ethers";
 const types = require('./types')
 const { generateUtil } = require('eth-delegatable-utils');
-const CONTRACT_NAME = 'PhisherRegistry';
 const { abi } = require('./artifacts');
-const { chainId, address } = require('./config.json');
+const { chainId, address, name } = require('./config.json');
+const CONTRACT_NAME = name;
 
 export default async function reportPhishers (phishers, provider, invitation) {
   const { key, signedDelegations } = invitation;
@@ -13,7 +13,8 @@ export default async function reportPhishers (phishers, provider, invitation) {
     name: CONTRACT_NAME,
   })
 
-  const wallet = new ethers.Wallet(key, provider);
+  const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+  const wallet = web3Provider.getSigner();
   const registry = await attachRegistry(wallet);
 
   const invocations = await Promise.all(phishers.map(async (phisher) => {
@@ -24,7 +25,7 @@ export default async function reportPhishers (phishers, provider, invitation) {
       transaction: {
         to: address,
         data: desiredTx.data,
-        gasLimit: 21000,
+        gasLimit: 500000,
       },
       authority: signedDelegations,
    }

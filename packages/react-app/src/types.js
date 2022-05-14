@@ -1,7 +1,7 @@
 const typedMessage = {
   primaryType: 'Delegation',
   domain: {
-    name: 'DelegatorTest',
+    name: 'MobyMask',
     version: '1',
   },
 

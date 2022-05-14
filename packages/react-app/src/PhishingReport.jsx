@@ -46,7 +46,9 @@ export default function (props ) {
             })}
           </ol>
           <button onClick={async () => {
-            await reportPhishers(phishers, provider, invitation);
+            console.log('submitting batch');
+            const block = await reportPhishers(phishers, provider, invitation);
+            console.log('batch submitted', block);
             localStorage.clear();
             setPhishers([]);
           }}>Submit batch to blockchain</button>

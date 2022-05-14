@@ -13,7 +13,6 @@ const {
   typedSignatureHash,
   encodeData,
 } = TypedDataUtils;
-const CONTRACT_NAME = 'PhisherRegistry';
 
 const BASE_URI = 'https://mobymask.com/#';
 
@@ -49,15 +48,14 @@ if (process.env.ENV === 'PROD') {
 let registry: ethers.Contract;
 let signer: ethers.Wallet;
 let _chainId: string;
+let _name: string = 'MobyMask';
 
 const methodMapping = {
   submitInvocations: async (signedInvocations: SignedInvocation[]): Promise<boolean> => {
     try {
       const tx = await registry.invoke(signedInvocations);
       const block = tx.block;
-      console.log(block);
     } catch (err) {
-      console.log('Invocation failed.', err);
       return false;
     }
     return true;
@@ -73,7 +71,6 @@ setupSigner()
 
 async function setupSigner () {
   signer = ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
-  console.dir(signer);
 }
 
 async function activateServer () {
@@ -126,7 +123,8 @@ async function activateServer () {
 async function setupContract (): Promise<ethers.Contract> {
   try {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const { address, chainId } = config;
+    const { address, chainId, name } = config;
+    _name = name;
     _chainId = chainId;
     return attachToContract(address)
   } catch (err) {
@@ -138,9 +136,11 @@ async function setupContract (): Promise<ethers.Contract> {
 async function deployContract () {
   const Registry = new ethers.ContractFactory(abi, phisherRegistryArtifacts.bytecode, signer);
   const balance = await provider.getBalance(signer?.address && signer.address);
-  const registry = await Registry.deploy('MobyMask');
+  const _name = 'MobyMask';
+  const registry = await Registry.deploy(_name);
+
   const address = registry.address;
-  fs.writeFileSync(configPath, JSON.stringify({ address, chainId: registry.deployTransaction.chainId }, null, 2));
+  fs.writeFileSync(configPath, JSON.stringify({ address, name: _name, chainId: registry.deployTransaction.chainId }, null, 2));
   try {
     return await registry.deployed();
   } catch (err) {
@@ -191,11 +191,14 @@ type SignedInvocation = {
 
 async function signDelegation () {
 
-  const util = generateUtil({
-    chainId: _chainId,
+  const { chainId } = await provider.getNetwork();
+  const utilOpts = {
+    chainId,
     verifyingContract: registry.address,
-    name: CONTRACT_NAME,      
-  })
+    name: _name,      
+  };
+  console.log('util opts', utilOpts);
+  const util = generateUtil(utilOpts)
   const delegate = ethers.Wallet.createRandom();
 
   // Prepare the delegation message.
@@ -209,7 +212,7 @@ async function signDelegation () {
     }],
   };
 
-  const typedMessage = createTypedMessage(registry, delegation, 'Delegation', CONTRACT_NAME, _chainId);
+  const typedMessage = createTypedMessage(registry, delegation, 'Delegation', _name, _chainId);
 
   // Owner signs the delegation:
   const signedDelegation = util.signDelegation(delegation, signer.privateKey);
@@ -234,7 +237,6 @@ function fromHexString (hexString: string) {
   }
   const mapped = matched.map(byte => parseInt(byte, 16));
   if (!mapped || mapped.length !== 32) {
-    console.dir(mapped);
     throw new Error('Expected a hex string.');
   }
   return new Uint8Array(mapped);
