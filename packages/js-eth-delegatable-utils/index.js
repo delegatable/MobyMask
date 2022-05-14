@@ -1,6 +1,10 @@
 const types = require('./types')
 const createTypedMessage = require('./createTypedMessage');
 const sigUtil = require('@metamask/eth-sig-util');
+const {
+  TypedDataUtils,
+} = sigUtil;
+
 const { abi } = require('./artifacts');
 const CONTRACT_NAME = 'PhisherRegistry';
 
@@ -26,7 +30,7 @@ exports.recoverSigner = exports.recoverDelegationSigner;
 exports.createSignedDelegationHash = function createDelegationHash (signedDelegation, contractInfo) {
   const { verifyingContract, name, chainId } = contractInfo;
   const typedMessage = createTypedMessage(verifyingContract, signedDelegation, 'SignedDelegation', name, chainId);
-  const hash = sigUtil.typedSignatureHash(typedMessage);
+  const hash = TypedDataUtils.eip712Hash(typedMessage, 'V4');
   return hash;
 }
 
