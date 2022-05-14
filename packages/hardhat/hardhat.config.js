@@ -5,6 +5,7 @@ const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
 require("@tenderly/hardhat-tenderly");
+require("@nomiclabs/hardhat-etherscan");
 
 require("hardhat-deploy");
 
@@ -44,7 +45,9 @@ function mnemonic() {
 
 module.exports = {
   defaultNetwork,
-
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY
+  },
   verify: {
     etherscan: {
       apiKey: process.env.ETHERSCAN_KEY
