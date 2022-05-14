@@ -207,7 +207,7 @@ function generateInviteView(invitation, addInvitation) {
           const newInvitation = createInvitation(invitation);
           const inviteLink = window.location.origin + '/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
           navigator.clipboard.writeText(inviteLink).then(function() {
-            alert('Copied to clipboard!');
+            alert('Copied to clipboard. Paste it somewhere only the intended recipients can see or you can lose your membership.');
             if (addInvitation) {
               addInvitation({
                 petName,
