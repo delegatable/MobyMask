@@ -11,7 +11,7 @@ exports.generateUtil = function generateUtil (contractInfo) {
 
     signDelegation: (delegation, privateKey) => exports.signDelegation(delegation, privateKey, contractInfo),
     recoverDelegationSigner: (signedDelegation) => exports.recoverDelegationSigner(signedDelegation, contractInfo),
-    createDelegationHash: (delegation) => exports.createDelegationHash(delegation, contractInfo),
+    createSignedDelegationHash: (signedDelegation) => exports.createSignedDelegationHash(signedDelegation, contractInfo),
 
     signInvocation: (invocation, privateKey) => exports.signInvocation(invocation, privateKey, contractInfo),
     recoverInvocationSigner: (signedInvocation) => exports.recoverInvocationSigner(signedInvocation, contractInfo),
@@ -23,9 +23,9 @@ exports.generateUtil = function generateUtil (contractInfo) {
 
 exports.recoverSigner = exports.recoverDelegationSigner;
 
-exports.createDelegationHash = function createDelegationHash (delegation, contractInfo) {
+exports.createSignedDelegationHash = function createDelegationHash (signedDelegation, contractInfo) {
   const { verifyingContract, name, chainId } = contractInfo;
-  const typedMessage = createTypedMessage(verifyingContract, delegation, 'Delegation', name, chainId);
+  const typedMessage = createTypedMessage(verifyingContract, signedDelegation, 'SignedDelegation', name, chainId);
   const hash = sigUtil.typedSignatureHash(typedMessage);
   return hash;
 }
