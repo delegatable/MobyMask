@@ -25,7 +25,6 @@ abstract contract RevocationEnforcer is CaveatEnforcer, Delegatable {
     require(signer == revocationSigner, "Only the signer can revoke a delegation");
 
     bytes32 delegationHash = GET_SIGNEDDELEGATION_PACKETHASH(signedDelegation);
-    console.log("I guess the %s is equal to %s", signer, revocationSigner);
     isRevoked[delegationHash] = true;
   }
 

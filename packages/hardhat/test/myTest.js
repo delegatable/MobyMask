@@ -154,7 +154,7 @@ describe(CONTRACT_NAME, function () {
     expect(await yourContract.connect(addr2).isPhisher(targetString)).to.equal(true);
   });
 
-  it('Revocation is available as a built-in caveat', async () => {
+  it.only('Revocation is available as a built-in caveat', async () => {
     const [owner, addr1, addr2] = await ethers.getSigners();
     console.log(`owner: ${owner.address}`);
     console.log(`addr1: ${addr1.address}`);
@@ -185,7 +185,11 @@ describe(CONTRACT_NAME, function () {
     const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
 
     // Owner revokes outstanding delegation
-    await yourContract.revokeDelegation(signedDelegation);
+    const intentionToRevoke = {
+      delegationHash: TypedDataUtils.hashStruct('SignedDelegation', signedDelegation, types, true)
+    }
+    const SignedIntentionToRevoke = util.signRevocation(intentionToRevoke, ownerHexPrivateKey);
+    await yourContract.revokeDelegation(signedDelegation, SignedIntentionToRevoke);
 
     // Delegate signs the invocation message:
     const desiredTx = await yourContract.populateTransaction.claimIfPhisher(targetString, true);
@@ -213,174 +217,6 @@ describe(CONTRACT_NAME, function () {
       // Should not be permitted:
       expect(err.message).to.include('Delegation has been revoked');
     }
-  });
-
-  it('Revocation can be triggered as an invocation', async () => {
-    const [owner, addr1, addr2] = await ethers.getSigners();
-    console.log(`owner: ${owner.address}`);
-    console.log(`addr1: ${addr1.address}`);
-    console.log(`addr2: ${addr2.address}`);
-
-    const targetString = 'A totally DELEGATED purpose!'
-    const yourContract = await deployContract();
-    const { chainId } = await yourContract.provider.getNetwork();
-    const utilOpts = {
-      chainId,
-      verifyingContract: yourContract.address,
-      name: CONTRACT_NAME,      
-    }
-    const util = generateUtil(utilOpts);
-
-    // Prepare the delegation message:
-    // This message has no caveats, and authority 0,
-    // so it is a simple delegation to addr1 with no restrictions,
-    // and will allow the delegate to perform any action the signer could perform on this contract.
-    const delegation = {
-      delegate: addr1.address,
-      authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      caveats: [{
-        enforcer: yourContract.address,
-        terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      }],
-    };
-    const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
-
-    // Owner revokes outstanding delegation
-    const desiredTx1 = await yourContract.populateTransaction.revokeDelegation(signedDelegation);
-    const invocationMessage1 = {
-      replayProtection: {
-        nonce: '0x01',
-        queue: '0x01',
-      },
-      batch: [{
-        authority: [],
-        transaction: {
-          to: yourContract.address,
-          gasLimit: '10000000000000000',
-          data: desiredTx1.data,
-        },
-      }],
-    };
-    const signedInvocation1 = util.signInvocation(invocationMessage1, ownerHexPrivateKey);
-
-    // A third party can submit the revocation for the owner:
-    const res = await yourContract.connect(addr2).invoke([signedInvocation1]);
-
-    // Delegate signs the invocation message:
-    const desiredTx = await yourContract.populateTransaction.claimIfPhisher(targetString, true);
-    const delegatePrivateKey = fromHexString(account1PrivKey);
-    const invocationMessage = {
-      replayProtection: {
-        nonce: '0x01',
-        queue: '0x02',
-      },
-      batch: [{
-        authority: [signedDelegation],
-        transaction: {
-          to: yourContract.address,
-          gasLimit: '10000000000000000',
-          data: desiredTx.data,
-        },
-      }],
-    };
-    const signedInvocation= util.signInvocation(invocationMessage, account1PrivKey);
-
-    try {
-      // A third party can submit the invocation method to the chain:
-      const res = await yourContract.connect(addr2).invoke([signedInvocation]);
-    } catch (err) {
-      // Should not be permitted:
-      expect(err.message).to.include('Delegation has been revoked');
-    }
-  });
-
-  it.only('Revocation must not be triggerable as a delegated method', async () => {
-    const [owner, addr1, addr2] = await ethers.getSigners();
-    console.log(`owner: ${owner.address}`);
-    console.log(`addr1: ${addr1.address}`);
-    console.log(`addr2: ${addr2.address}`);
-
-    const targetString = 'A totally DELEGATED purpose!'
-    const yourContract = await deployContract();
-    const { chainId } = await yourContract.provider.getNetwork();
-    const utilOpts = {
-      chainId,
-      verifyingContract: yourContract.address,
-      name: CONTRACT_NAME,      
-    }
-    const util = generateUtil(utilOpts);
-
-    // Owner delegates to account 1
-    const delegation = {
-      delegate: addr1.address,
-      authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      caveats: [{
-        enforcer: yourContract.address,
-        terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      }],
-    };
-    console.log('owner signs delegation 1', delegation)
-    const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
-
-    // Owner delegates to account 2
-    const delegation2 = {
-      delegate: addr2.address,
-      authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      caveats: [{
-        enforcer: yourContract.address,
-        terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      }],
-    };
-    console.log('owner signs delegation 2', delegation2); 
-    const signedDelegation2 = util.signDelegation(delegation2, ownerHexPrivateKey);
-
-    // account 2 wants to revoke account 1's delegation
-    console.log('account 2 tries the business')
-    const desiredRevocationTx = await yourContract.populateTransaction.revokeDelegation(signedDelegation);
-    const desiredInvocationMessage = {
-      replayProtection: {
-        nonce: '0x01',
-        queue: '0x01',
-      },
-      batch: [{
-        authority: [signedDelegation2],
-        transaction: {
-          to: yourContract.address,
-          gasLimit: '10000000000000000',
-          data: desiredRevocationTx.data,
-        },
-      }],
-    };
-    console.log('account 2 signs the attempted revocation message', JSON.stringify(desiredInvocationMessage, null, 2))
-    const signedDesiredRevocation = util.signInvocation(desiredInvocationMessage, account2PrivKey);
-
-    // The attempted delegation revocation should fail:
-    try {
-      const res = await yourContract.connect(addr2).invoke([signedDesiredRevocation]);
-    } catch (err) {
-      expect(err).to.be();
-    }
-
-    // Account 1 should still be able to report phishers:
-    const desiredTx = await yourContract.populateTransaction.claimIfPhisher(targetString, true);
-    const invocationMessage = {
-      replayProtection: {
-        nonce: '0x01',
-        queue: '0x02',
-      },
-      batch: [{
-        authority: [signedDelegation],
-        transaction: {
-          to: yourContract.address,
-          gasLimit: '10000000000000000',
-          data: desiredTx.data,
-        },
-      }],
-    };
-    const signedInvocation = util.signInvocation(invocationMessage, account1PrivKey);
-    console.log('now this attempted-couped account 1 tries to do their thing');
-    const res = await yourContract.connect(addr2).invoke([signedInvocation]);
-    expect(await yourContract.connect(addr2).isPhisher(targetString)).to.equal(true);
   });
 
 });
