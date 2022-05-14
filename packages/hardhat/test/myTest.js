@@ -219,6 +219,66 @@ describe(CONTRACT_NAME, function () {
     }
   });
 
+  it('Delegates can not call ownership methods', async () => {
+    const [owner, addr1, addr2] = await ethers.getSigners();
+    console.log(`owner: ${owner.address}`);
+    console.log(`addr1: ${addr1.address}`);
+    console.log(`addr2: ${addr2.address}`);
+
+    const targetString = 'A totally DELEGATED purpose!'
+    const yourContract = await deployContract();
+    const { chainId } = await yourContract.provider.getNetwork();
+    const utilOpts = {
+      chainId,
+      verifyingContract: yourContract.address,
+      name: CONTRACT_NAME,      
+    }
+    const util = generateUtil(utilOpts);
+
+    // Prepare the delegation message:
+    // This message has no caveats, and authority 0,
+    // so it is a simple delegation to addr1 with no restrictions,
+    // and will allow the delegate to perform any action the signer could perform on this contract.
+    const delegation = {
+      delegate: addr1.address,
+      authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      caveats: [{
+        enforcer: yourContract.address,
+        terms: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      }],
+    };
+    const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
+
+    // Delegate tries to steal ownership:
+    const desiredTx = await yourContract.populateTransaction.transferOwnership(addr1.address);
+    const invocationMessage = {
+      replayProtection: {
+        nonce: '0x01',
+        queue: '0x00',
+      },
+      batch: [{
+        authority: [signedDelegation],
+        transaction: {
+          to: yourContract.address,
+          gasLimit: '10000000000000000',
+          data: desiredTx.data,
+        },
+      }],
+    };
+    const signedInvocation= util.signInvocation(invocationMessage, account1PrivKey);
+
+    try {
+      // A third party can submit the invocation method to the chain:
+      const res = await yourContract.connect(addr2).invoke([signedInvocation]);
+    } catch (err) {
+      // Should not be permitted:
+      expect(err.message).to.include('Delegation has been revoked');
+    }
+
+    const finalOwner = await yourContract.owner();
+    expect(finalOwner).to.equal(owner.address);
+  });
+
 });
 
 async function deployContract () {
