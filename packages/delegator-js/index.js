@@ -99,7 +99,7 @@ exports.signRevocation = function signRevocation (revocation, privateKey, contra
 
   const signedRevocation = {
     signature,
-    revocation,
+    intentionToRevoke: revocation,
   }
 
   return signedRevocation;
