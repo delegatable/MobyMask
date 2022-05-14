@@ -154,7 +154,7 @@ describe(CONTRACT_NAME, function () {
     expect(await yourContract.connect(addr2).isPhisher(targetString)).to.equal(true);
   });
 
-  it.only('Revocation is available as a built-in caveat', async () => {
+  it('Revocation is available as a built-in caveat', async () => {
     const [owner, addr1, addr2] = await ethers.getSigners();
     console.log(`owner: ${owner.address}`);
     console.log(`addr1: ${addr1.address}`);
