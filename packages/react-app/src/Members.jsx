@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Landing from "./Landing"
+import ReviewAndRevokeInvitations from './ReviewAndRevokeInvitations';
 import {
   BrowserRouter as Router,
   Route,
@@ -116,52 +117,36 @@ export default function Members (props) {
     <div>
       <div className="controlBoard">
 
-        <div className="box">
-          <PhishingReport invitation={invitation}/>
+        <div className="phisherBox">
+          <div className="box">
+            <PhishingReport invitation={invitation}/>
+          </div>
+
+          <div className='box'>
+            <LazyConnect actionName="Check if a user is a phisher">
+              <PhisherCheckButton/>
+            </LazyConnect>
+          </div>
         </div>
 
-        <div className='box'>
-          <LazyConnect actionName="Check if a user is a phisher">
-             <PhisherCheckButton/>
+        <div className="inviteBox">
+          { inviteView }
+
+          <LazyConnect actionName="revoke outstanding invitations">
+            <ReviewAndRevokeInvitations
+              invitations={invitations}
+              invitation={invitation}
+              setInvitations={setInvitations}/>
           </LazyConnect>
-        </div>
 
-        { inviteView }
+          <div className='box'>
+            <h3>Review your invites and their reports. (Coming soon!)</h3>
+          </div>
 
-        <div className='box'>
-          <h3>Outstanding Invitations</h3>
-          { invitations.map((_invitation, index) => {
-            return (
-              <div key={index}>
-                <span>{ _invitation.petName }</span>
-                <button onClick={async () => {
-                  const { signedDelegations } = _invitation.invitation;
-                  const signedDelegation = signedDelegations[signedDelegations.length - 1];
-
-                  const delegationHash = util.createSignedDelegationHash(signedDelegation);
-                  const intendedRevocation = {
-                    delegationHash,
-                  }
-                  const signedIntendedRevocation = util.signRevocation(intendedRevocation, invitation.key);
-
-                  const block = await registry.revokeDelegation(signedDelegation, signedIntendedRevocation);
-
-                  const newInvites = [...invitations];
-                  newInvites.splice(index, 1);
-                  localStorage.setItem('outstandingInvitations', JSON.stringify(newInvites));
-                  setInvitations(newInvites);
-                }}>Revoke</button>
-              </div>
-            )
-          })}
         </div>
 
         <div className='box'>
           <h3>Endorse a benevolent entity (coming soon)</h3>
-        </div>
-
-        <div className='box'>
-          <h3>Review your invites and their reports. (Coming soon!)</h3>
         </div>
 
         <Landing />
@@ -178,6 +163,8 @@ function generateInviteView(invitation, addInvitation) {
     return (
       <div className='box'>
         <p>You are a tier {invitation.signedDelegations.length} invitee. This means you can invite up to {4-tier} additional tiers of members.</p>
+        <p>Invite people who you think will respect the system, and only report definite impostors and frauds, and only endorse people who are neither.</p>
+        <p>If you invite an abusive person and don't revoke their activity quickly, you may have your membership revoked.</p>
         <button onClick={() => {
           const petName = prompt('Who is this invitation for (for your personal use only, so you can view their reports and revoke the invitation)?');
           const newInvitation = createInvitation(invitation);

@@ -64,3 +64,13 @@ button {
 .lazyConnect {
   border: 1px dashed black;
 }
+
+.phisherBox {
+  background-color: pink;
+  padding: 4px;
+}
+
+.inviteBox {
+  background-color: #acdeff;
+  padding: 4px;
+}
