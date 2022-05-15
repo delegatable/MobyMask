@@ -123,7 +123,8 @@ export default function Members (props) {
           </div>
 
           <div className='box'>
-            <LazyConnect actionName="Check if a user is a phisher">
+            <LazyConnect actionName="check if a user is a phisher" chainId={chainId}
+              opts={{ needsAccountConnected: false }}>
               <PhisherCheckButton/>
             </LazyConnect>
           </div>
@@ -132,7 +133,7 @@ export default function Members (props) {
         <div className="inviteBox">
           { inviteView }
 
-          <LazyConnect actionName="revoke outstanding invitations">
+          <LazyConnect actionName="revoke outstanding invitations" chainId={chainId}>
             <ReviewAndRevokeInvitations
               invitations={invitations}
               invitation={invitation}
@@ -196,6 +197,7 @@ function useQuery() {
 
 function PhisherCheckButton (props) {
   const { provider } = props;
+  const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
   const [ registry, setRegistry ] = useState(null);
 
   // Get registry
@@ -204,8 +206,7 @@ function PhisherCheckButton (props) {
       return;
     }
 
-    console.log('phisher check button is creating registry with provider', provider);
-    createRegistry(provider)
+    createRegistry(ethersProvider)
     .then((_registry) => {
       console.log('registry got, setting');
       setRegistry(_registry);

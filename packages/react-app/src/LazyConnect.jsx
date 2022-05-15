@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
-const { ethers } = require("ethers");
-import MetaMaskOnboarding from '@metamask/onboarding'
-const config = require('./config.json');
-const { chainId } = config;
+import React, { useEffect, useState } from "react";
+import MetaMaskOnboarding from '@metamask/onboarding';
+import chainList from './chainList';
 
 export default function LazyConnect (props) {
-  const { actionName } = props;
+  const { actionName, chainId, opts = {} } = props;
+  const { needsAccountConnected = true } = opts;
   const [provider, setInjectedProvider] = useState();
   const [accounts, setAccounts] = useState([]);
   const [error, setError] = useState(null);
@@ -13,9 +12,10 @@ export default function LazyConnect (props) {
   const [loading, setLoading] = useState(false);
 
   if (!provider && MetaMaskOnboarding.isMetaMaskInstalled()) { 
-    const ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-    setInjectedProvider(ethersProvider);
+    setInjectedProvider(window.ethereum);
   }
+
+  const chainName = chainId ? chainList[Number(chainId)] : null;
 
   // Get accounts;
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function LazyConnect (props) {
     .catch(console.error);
 
     async function getAccounts() {
-      const accounts = await ethereum.request({ method: 'eth_accounts' });
+      const accounts = await provider.request({ method: 'eth_accounts' });
       return accounts;
     }
 
@@ -44,52 +44,54 @@ export default function LazyConnect (props) {
     .catch(console.error);
 
     async function getUserChainId() {
-      const chainId = await ethereum.request({ method: 'eth_chainId' });
+      const chainId = await provider.request({ method: 'eth_chainId' });
       return chainId;
     }
 
-    provider.provider.on('chainChanged', (_chainId) => {
+    provider.on('chainChanged', (_chainId) => {
       setUserChainId(_chainId);
     });
   }, []);
 
   if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
     return (<div className="lazyConnect">
-      <p>You need a wallet to {actionName}.</p>
+      { createChecklist({
+        hasWallet: MetaMaskOnboarding.isMetaMaskInstalled(),
+        provider,
+        setLoading,
+        chainId: chainId,
+        userChainId,
+        chainName,
+        setAccounts,
+        needsAccountConnected,
+        actionName,
+        accounts,
+      })}
       <button onClick={() => {
         const onboarding = new MetaMaskOnboarding();
         onboarding.startOnboarding();
-        }}>Install MetaMask</button>
+        }}>Get MetaMask</button>
     </div>);
   }
 
-  if (Number(userChainId) !== config.chainId) {
-    return <div className="lazyConnect">
-      <p>This app requires the Goerli test network to be selected in your wallet, since this is just a test for now.</p>
-      <button onClick={async () => {
-        ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x' + config.chainId.toString(16) }],
-        })
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((reason) => {
-          setLoading(false);
-          setError(reason);
-        });
-        setLoading(true);
-      }}>Switch to Goerli</button>
-    </div>
-  }
+  const needsToSwitchChain = Number(userChainId) !== chainId;
+  const needsToConnectAccount = needsAccountConnected && accounts && accounts.length === 0;
+  const requiresAction = needsToSwitchChain || needsToConnectAccount;
 
-  if (accounts && accounts.length === 0) {
+  if (requiresAction) {
     return <div className="lazyConnect">
-      <p>You need to connect an account to {actionName}.</p>
-      <button onClick={async () => {
-        const accounts = await ethereum.request({ method: 'wallet_requestAccounts' });
-        setAccounts(accounts);
-      }}>Connect an account</button>
+      { createChecklist({
+        setLoading,
+        provider,
+        hasWallet: MetaMaskOnboarding.isMetaMaskInstalled(),
+        chainId: chainId,
+        userChainId,
+        chainName,
+        setAccounts,
+        needsAccountConnected,
+        actionName,
+        accounts,
+      })}
     </div>
   }
 
@@ -108,5 +110,46 @@ export default function LazyConnect (props) {
     return child;
   });  
 
-  return (<div>{childrenWithProps}</div>)
+  return (<div className="lazyConnected">{childrenWithProps}</div>)
+}
+
+function createChecklist (checklistOpts) {
+  const { chainId, userChainId, chainName, setAccounts, provider, setLoading,
+    needsAccountConnected, actionName, hasWallet, accounts } = checklistOpts;
+  return (<div>
+    <p>You need a few things to {actionName}.</p>
+    <ol>
+      { hasWallet ?
+        <li>✅ Get a web3 compatible Wallet (like MetaMask)</li> :
+        <li>☐ Get a web3 compatible Wallet (like MetaMask)</li> }
+      { needsAccountConnected ? (
+          accounts && accounts.length === 0 ?
+          <li>☐ <button onClick={async () => {
+            const accounts = await provider.request({ method: 'wallet_requestAccounts' });
+            setAccounts(accounts);
+          }}>Connect an account</button></li> :
+          <li>✅ Connect an account</li>
+      )
+          : null }
+      { !!chainId && 
+        (Number(userChainId) !== chainId ?
+          <li>☐ <button onClick={async () => {
+        provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x' + chainId.toString(16) }],
+        })
+        .then(() => {
+          setLoading(false);
+        })
+        .catch((reason) => {
+          setLoading(false);
+          setError(reason);
+        });
+        setLoading(true);
+      }}>Switch to the { chainName } network</button>
+      </li> :
+        <li>✅ Switch to the {chainName} network</li>)
+      }
+    </ol>
+   </div>);
 }

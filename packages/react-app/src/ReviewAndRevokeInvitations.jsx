@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 const { generateUtil } = require('eth-delegatable-utils');
 const { chainId, address, name } = require('./config.json');
@@ -11,6 +12,7 @@ const util = generateUtil({
 
 export default function (props) {
   const { provider, invitations, invitation, setInvitations } = props;
+  const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
 
   const [ registry, setRegistry ] = useState(null);
 
@@ -20,10 +22,8 @@ export default function (props) {
       return;
     }
 
-    console.log('phisher check button is creating registry with provider', provider);
-    createRegistry(provider)
+    createRegistry(ethersProvider)
     .then((_registry) => {
-      console.log('registry got, setting');
       setRegistry(_registry);
     }).catch(console.error);
   });

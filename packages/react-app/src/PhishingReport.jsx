@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import reportPhishers from './reportPhishers';
-import LazyConnect from './LazyConnect';
+import LazyConnect from 'lazyconnect';
+const { ethers } = require("ethers");
+const config = require('./config.json');
+const { chainId } = config;
 
 export default function (props ) {
   const { invitation } = props;
@@ -48,7 +51,7 @@ export default function (props ) {
             })}
           </ol>
 
-          <LazyConnect actionName="submit reports directly to the blockchain">
+          <LazyConnect actionName="submit reports directly to the blockchain" chainId={chainId}>
             <SubmitBatchButton phishers={phishers} invitation={invitation} setPhishers={setPhishers}/>
           </LazyConnect>
           </div> : null }
@@ -59,10 +62,11 @@ export default function (props ) {
 
 function SubmitBatchButton (props) {
   const { provider, phishers, invitation, setPhishers } = props;
+  const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
   return (<div>
     <button onClick={async () => {
       console.log('submitting batch');
-      const block = await reportPhishers(phishers, provider, invitation);
+      const block = await reportPhishers(phishers, ethersProvider, invitation);
       console.log('batch submitted', block);
       localStorage.clear();
       setPhishers([]);
