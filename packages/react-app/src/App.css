@@ -44,7 +44,6 @@ button.installButton {
 }
 
 .footer {
-  position:fixed;
   bottom:0;
   left:0;
   width:100%;
@@ -60,4 +59,8 @@ button.installButton {
 
 button {
   cursor: pointer;
+}
+
+.lazyConnect {
+  border: 1px dashed black;
 }

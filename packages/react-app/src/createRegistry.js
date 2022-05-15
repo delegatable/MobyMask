@@ -1,13 +1,13 @@
 import { ethers } from "ethers";
-const types = require('./types')
 const { abi } = require('./artifacts');
-const { chainId, address, name } = require('./config.json');
+const { address, name } = require('./config.json');
 const CONTRACT_NAME = name;
 
-export default async function createRegistry () {
-  const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-  const wallet = web3Provider.getSigner();
-  console.log('made wallet, attaching registry');
+export default async function createRegistry (provider) {
+  console.log('creating registry');
+  console.log('made provider')
+  const wallet = provider.getSigner();
+  console.log('made wallet, attaching registry', wallet);
   const registry = await attachRegistry(wallet);
   console.log('there it is', registry);
   return registry;

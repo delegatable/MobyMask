@@ -13,8 +13,7 @@ export default async function reportPhishers (phishers, provider, invitation) {
     name: CONTRACT_NAME,
   })
 
-  const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-  const wallet = web3Provider.getSigner();
+  const wallet = provider.getSigner();
   const registry = await attachRegistry(wallet);
 
   const invocations = await Promise.all(phishers.map(async (phisher) => {

@@ -34,26 +34,22 @@ type Invitation = {
 }
 */
 
-export async function validateInvitation (invitation, provider) {
+export async function validateInvitation (invitation) {
   console.log('invitation', invitation);
 
-  const { chainId } = await provider.getNetwork();
   const { signedDelegations, key } = invitation;
-  const wallet = new ethers.Wallet(key, provider);
-  const registry = await attachRegistry(wallet);
+  const wallet = new ethers.Wallet(key);
 
   for (let i = 0; i < signedDelegations.length; i++) {
     console.log('delegation ' + i);
     const signedDelegation = signedDelegations[i];
     const signer = recoverDelegationSigner(signedDelegation, {
       chainId,
-      verifyingContract: registry.address,
+      verifyingContract: address,
       name: CONTRACT_NAME,
     });
     console.log('signed by ', signer);
     console.log('delegating to ', signedDelegation.delegation.delegate);
-
-    const typedMessage = createTypedMessage(registry, signedDelegation.delegation, 'Delegation', CONTRACT_NAME, chainId);
 
     if (i === 0) {
       if (signer !== '0xDdb18b319BE3530560eECFF962032dFAD88212d4'.toLowerCase()) {
@@ -71,12 +67,4 @@ export async function validateInvitation (invitation, provider) {
   }
 
   return !!invitation;
-}
-
-async function attachRegistry (signer) {
-  const Registry = new ethers.Contract(address, abi, signer);
-  const _registry = await Registry.attach(address);
-  console.log('Attaching to existing contract', _registry);
-  const deployed = await _registry.deployed();
-  return deployed;
 }

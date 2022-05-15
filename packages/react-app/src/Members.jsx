@@ -26,34 +26,21 @@ import PhishingReport from './PhishingReport';
 import PhisherCheck from './PhisherCheck';
 import { validateInvitation } from './delegator';
 import createInvitation from './createInvitation';
+import LazyConnect from './LazyConnect';
 
 export default function Members (props) {
   const query = useQuery();
-  const { provider } = props;
   const [ invitation, setInvitation ] = useState(null);
   const [ errorMessage, setErrorMessage ] = useState(null);
   const [ loading, setLoading ] = useState(false);
-  const [ registry, setRegistry ] = useState(null);
   const [ invitations, setInvitations ] = useState([]);
   const [ loaded, setLoaded ] = useState(false); // For loading invitations
   const history = useHistory();
 
-  // Get registry
-  useEffect(() => {
-    if (registry) {
-      return;
-    }
-
-    createRegistry()
-    .then((_registry) => {
-      setRegistry(_registry);
-    }).catch(console.error);
-  });
-
+  
+  // Load user's own invitation from disk or query string:
   useEffect(() => {
     async function checkInvitations () {
-      const network = await provider.getNetwork();
-
       if (!loading) {
         setLoading(true);
 
@@ -66,7 +53,7 @@ export default function Members (props) {
             }
             if (!parsedInvitation || parsedInvitation === 'null') {
               parsedInvitation = JSON.parse(query.get("invitation"));
-              await validateInvitation(parsedInvitation, provider);
+              await validateInvitation(parsedInvitation);
               document.cookie = query.get("invitation");
             }
 
@@ -84,6 +71,7 @@ export default function Members (props) {
     checkInvitations().catch(console.error);
   });
 
+  // Load user's outstanding invitations from disk:
   useEffect(() => {
     if (loaded) {
       return;
@@ -121,34 +109,19 @@ export default function Members (props) {
     } 
   });
 
-  if (!registry) {
-    return <p>Loading. Or connect to the Goerli test network. This is a hackathon project, please forgive the rough edges.</p>
-  }
-
   return (
     <div>
-      <h1>
-        Member Portal 
-      </h1>
-
       <div className="controlBoard">
 
-        <PhishingReport invitation={invitation} provider={provider}/>
+        <div className="box">
+          <PhishingReport invitation={invitation}/>
+        </div>
 
-        <PhisherCheck checkPhisher={async (name) => {
-          console.log('checking if phisher', name);
-          try {
-            const result = await registry.isPhisher('TWT:' + name.toLowerCase());
-            console.log('result is ', result);
-            if (result) {
-              return `${name} is an accused phisher.`;
-            } else {
-              return `${name} is not a registered phisher.`;
-            }
-          } catch (err) {
-            console.error(err);
-          }
-        }}/>
+        <div className='box'>
+          <LazyConnect actionName="Check if a user is a phisher">
+             <PhisherCheckButton/>
+          </LazyConnect>
+        </div>
 
         { inviteView }
 
@@ -205,7 +178,7 @@ function generateInviteView(invitation, addInvitation) {
         <button onClick={() => {
           const petName = prompt('Who is this invitation for (for your personal use only, so you can view their reports and revoke the invitation)?');
           const newInvitation = createInvitation(invitation);
-          const inviteLink = window.location.origin + '/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
+          const inviteLink = window.location.origin + '/#/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
           navigator.clipboard.writeText(inviteLink).then(function() {
             alert('Copied to clipboard. Paste it somewhere only the intended recipients can see or you can lose your membership.');
             if (addInvitation) {
@@ -229,4 +202,44 @@ function useQuery() {
   const { search } = useLocation();
 
   return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+
+function PhisherCheckButton (props) {
+  const { provider } = props;
+  const [ registry, setRegistry ] = useState(null);
+
+  // Get registry
+  useEffect(() => {
+    if (registry) {
+      return;
+    }
+
+    console.log('phisher check button is creating registry with provider', provider);
+    createRegistry(provider)
+    .then((_registry) => {
+      console.log('registry got, setting');
+      setRegistry(_registry);
+    }).catch(console.error);
+  });
+
+  if (!registry) {
+    return <p>Loading...</p>
+  }
+
+  console.log('we got a registry, rendering phisher check');
+  return <PhisherCheck checkPhisher={async (name) => {
+    console.log('checking if phisher', name);
+    const codedName = `TWT:${name.toLowerCase()}`;
+    try {
+      const result = await registry.isPhisher(codedName);
+      console.log('result is ', result);
+      if (result) {
+        return `${name} is an accused phisher.`;
+      } else {
+        return `${name} is not a registered phisher.`;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }}/>
 }

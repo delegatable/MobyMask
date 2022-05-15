@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import reportPhishers from './reportPhishers';
+import LazyConnect from './LazyConnect';
 
 export default function (props ) {
-  const { invitation, provider } = props;
+  const { invitation } = props;
   const [ phisher, setPhisher ] = useState(null);
   const [ phishers, setPhishers ] = useState([]);
   const [ loaded, setLoaded ] = useState(false);
@@ -23,10 +24,11 @@ export default function (props ) {
 
   return (
     <div className='box'>
-      <h3>Report a phishing attempt (coming soon)</h3>
+      <h3>Report a phishing attempt</h3>
       <input type="text" placeholder="@phisher_person" onChange={(event) => {
         setPhisher(event.target.value);
       }}/>
+      
       <button onClick={() => {
         if (phisher) {
           console.log(`appending ${phisher} to `, phishers);
@@ -45,15 +47,25 @@ export default function (props ) {
               return (<li key={index}>{phisher}</li>);
             })}
           </ol>
-          <button onClick={async () => {
-            console.log('submitting batch');
-            const block = await reportPhishers(phishers, provider, invitation);
-            console.log('batch submitted', block);
-            localStorage.clear();
-            setPhishers([]);
-          }}>Submit batch to blockchain</button>
-        </div> : null }
+
+          <LazyConnect actionName="submit reports directly to the blockchain">
+            <SubmitBatchButton phishers={phishers} invitation={invitation} setPhishers={setPhishers}/>
+          </LazyConnect>
+          </div> : null }
       </div>
     </div>
   )
+}
+
+function SubmitBatchButton (props) {
+  const { provider, phishers, invitation, setPhishers } = props;
+  return (<div>
+    <button onClick={async () => {
+      console.log('submitting batch');
+      const block = await reportPhishers(phishers, provider, invitation);
+      console.log('batch submitted', block);
+      localStorage.clear();
+      setPhishers([]);
+    }}>Submit batch to blockchain</button>
+  </div>);
 }

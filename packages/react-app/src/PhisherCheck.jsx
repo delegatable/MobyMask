@@ -4,7 +4,7 @@ export default function (props) {
   const [name, setName] = useState('');
   const [output, setOutput] = useState('');
   return (
-    <div className="box">
+    <div>
       <h3>Check Phisher Status</h3>
       <input type="text" onChange={(e) => setName(e.target.value)} />
       <button onClick={() => {
