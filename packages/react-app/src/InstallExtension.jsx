@@ -1,7 +1,6 @@
 import React from 'react';
-import logo from './logo.svg';
 
-function Landing() {
+function InstallExtension() {
   return (
     <div className='box'>
       <p>
@@ -12,4 +11,4 @@ function Landing() {
   );
 }
 
-export default Landing;
+export default InstallExtension;

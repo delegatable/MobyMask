@@ -6,10 +6,13 @@ import {
   Switch,
   useLocation
 } from "react-router-dom";
-import Members from './Members';
+import LazyConnect from './LazyConnect';
+import { PhisherCheckButton } from './PhisherCheck';
+const { chainId } = require('./config.json');
 
 // Routes
-import Landing from './Landing';
+import InstallExtension from './InstallExtension';
+import Members from './Members';
 
 export default function QueryParamsRouter(props) {
   const { provider } = props;
@@ -18,7 +21,14 @@ export default function QueryParamsRouter(props) {
   return (
     <Switch>
       <Route exact path="/">
-        <Landing/>
+        <div className='box'>
+          <LazyConnect actionName="check if a user is a phisher" chainId={chainId}
+            opts={{ needsAccountConnected: false }}>
+            <PhisherCheckButton/>
+          </LazyConnect>
+        </div>
+
+        <InstallExtension/>
       </Route>
       <Route path="/members/">
         <Members/>

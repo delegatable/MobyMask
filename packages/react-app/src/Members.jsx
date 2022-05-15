@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Landing from "./Landing"
+import Landing from "./InstallExtension"
 import ReviewAndRevokeInvitations from './ReviewAndRevokeInvitations';
 import {
   BrowserRouter as Router,
@@ -10,12 +10,10 @@ import {
   useLocation
 } from "react-router-dom";
 
-import { ethers } from "ethers";
 const types = require('./types')
 const { generateUtil } = require('eth-delegatable-utils');
 const { abi } = require('./artifacts');
 const { chainId, address, name } = require('./config.json');
-import createRegistry from './createRegistry';
 const CONTRACT_NAME = name;
 const util = generateUtil({
   chainId,
@@ -24,7 +22,7 @@ const util = generateUtil({
 });
 
 import PhishingReport from './PhishingReport';
-import PhisherCheck from './PhisherCheck';
+import { PhisherCheckButton } from './PhisherCheck';
 import { validateInvitation } from './validateInvitation';
 import createInvitation from './createInvitation';
 import LazyConnect from './LazyConnect';
@@ -192,40 +190,4 @@ function useQuery() {
   const { search } = useLocation();
 
   return React.useMemo(() => new URLSearchParams(search), [search]);
-}
-
-function PhisherCheckButton (props) {
-  const { provider } = props;
-  const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
-  const [ registry, setRegistry ] = useState(null);
-
-  // Get registry
-  useEffect(() => {
-    if (registry) {
-      return;
-    }
-
-    createRegistry(ethersProvider, true)
-    .then((_registry) => {
-      setRegistry(_registry);
-    }).catch(console.error);
-  });
-
-  if (!registry) {
-    return <p>Loading...</p>
-  }
-
-  return <PhisherCheck checkPhisher={async (name) => {
-    const codedName = `TWT:${name.toLowerCase()}`;
-    try {
-      const result = await registry.isPhisher(codedName);
-      if (result) {
-        return `${name} is an accused phisher.`;
-      } else {
-        return `${name} is not a registered phisher.`;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }}/>
 }
