@@ -49,7 +49,6 @@ export default function LazyConnect (props) {
     }
 
     provider.provider.on('chainChanged', (_chainId) => {
-      console.log('event fired chain change', _chainId);
       setUserChainId(_chainId);
     });
   }, []);
@@ -65,7 +64,6 @@ export default function LazyConnect (props) {
   }
 
   if (Number(userChainId) !== config.chainId) {
-    console.log('showing network switcher because', {userChainId, config: config.chainId});
     return <div className="lazyConnect">
       <p>This app requires the Goerli test network to be selected in your wallet, since this is just a test for now.</p>
       <button onClick={async () => {
