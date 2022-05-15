@@ -1,4 +1,19 @@
-# Delegatable
+# MobyMask
+
+A lightweight, viral invite-based phishing report system with accountability and revocation. Available at [https://mobymask.com](https://mobymask.com).
+
+Based on the [Astral](https://github.com/danfinlay/astral-eth) framework for making counterfactually mintable soulbound tokens (or off chain delegations).
+
+## Workflow
+
+Various components can be found in the `packages` folder.
+- `hardhat` contains the solidity and its tests.
+- `server` includes a server that could eventually index the results, and generates root-level invitation links.
+- `react-app` contains the front-end.
+- `js-eth-delegatable-utils` is a JS utility I made for more easily and reliably making signatures in the Astral format.
+- `extension` is the beginnings of a browser extension that could flag phishers on Twitter. It is able to add a badge to people, but does not yet have a data source.
+
+# Astral
 
 An abstract solidity contract that any contract can easily integrate to add a ton of improvements to that contract's user and developer experience for all of its functions:
 - Allow users to sign "invocations" instead of transactions, which bring lots of benefits.
