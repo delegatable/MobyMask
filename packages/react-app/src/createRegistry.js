@@ -3,13 +3,10 @@ const { abi } = require('./artifacts');
 const { address, name } = require('./config.json');
 const CONTRACT_NAME = name;
 
-export default async function createRegistry (provider) {
-  console.log('creating registry');
-  console.log('made provider')
-  const wallet = provider.getSigner();
-  console.log('made wallet, attaching registry', wallet);
-  const registry = await attachRegistry(wallet);
-  console.log('there it is', registry);
+export default async function createRegistry (provider, readOnly = false) {
+  const wallet = !readOnly && provider.getSigner();
+  const toUse = readOnly ? provider : wallet;
+  const registry = await attachRegistry(toUse);
   return registry;
 }
 

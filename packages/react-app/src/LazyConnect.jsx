@@ -27,8 +27,12 @@ export default function LazyConnect (props) {
     .catch(console.error);
 
     async function getAccounts() {
-      const accounts = await provider.request({ method: 'eth_accounts' });
-      return accounts;
+      try {
+        const _accounts = await provider.request({ method: 'eth_accounts' });
+        setAccounts(_accounts);
+      } catch (err) {
+        console.log('Getting accounts failed!', err);
+      }
     }
 
     provider.on("accountsChanged", setAccounts);
@@ -152,7 +156,6 @@ function switchAccountsItem (opts) {
 function switchNetworkItem (opts) {
   const { chainId, userChainId, chainName, provider, setLoading, hasWallet } = opts;
   const needsToSwitchChain =  !!chainId && (Number(userChainId) !== chainId);
-  console.log('switchNetworkItem', opts);
 
   if (!needsToSwitchChain) {
     return null;

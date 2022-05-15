@@ -106,7 +106,6 @@ export default function Members (props) {
 
   const inviteView = generateInviteView(invitation, (invitation) => {
     if (invitation) {
-      console.log(`appending ${invitation.petName} to outstanding invites`);
       const newInvites = [...invitations, invitation];
       localStorage.setItem('outstandingInvitations', JSON.stringify(newInvites));
       setInvitations(newInvites);
@@ -206,9 +205,8 @@ function PhisherCheckButton (props) {
       return;
     }
 
-    createRegistry(ethersProvider)
+    createRegistry(ethersProvider, true)
     .then((_registry) => {
-      console.log('registry got, setting');
       setRegistry(_registry);
     }).catch(console.error);
   });
@@ -217,13 +215,10 @@ function PhisherCheckButton (props) {
     return <p>Loading...</p>
   }
 
-  console.log('we got a registry, rendering phisher check');
   return <PhisherCheck checkPhisher={async (name) => {
-    console.log('checking if phisher', name);
     const codedName = `TWT:${name.toLowerCase()}`;
     try {
       const result = await registry.isPhisher(codedName);
-      console.log('result is ', result);
       if (result) {
         return `${name} is an accused phisher.`;
       } else {
