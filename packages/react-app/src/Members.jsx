@@ -110,6 +110,7 @@ export default function Members (props) {
     } 
   });
 
+  console.log('rendering members screen')
   return (
     <div>
       <div className="controlBoard">

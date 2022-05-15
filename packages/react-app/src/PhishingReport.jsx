@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import reportPhishers from './reportPhishers';
-import LazyConnect from 'lazyconnect';
+import LazyConnect from './LazyConnect';
 const { ethers } = require("ethers");
-const config = require('./config.json');
+const config = require('./config.json')
 const { chainId } = config;
 
 export default function (props ) {
   const { invitation } = props;
-  const [ phisher, setPhisher ] = useState(null);
+  const [ phisher, setPhisher ] = useState();
   const [ phishers, setPhishers ] = useState([]);
   const [ loaded, setLoaded ] = useState(false);
 
@@ -23,7 +23,7 @@ export default function (props ) {
     } catch (err) {
       console.error(err);
     }
-  });
+  }, []);
 
   return (
     <div className='box'>
@@ -34,7 +34,6 @@ export default function (props ) {
       
       <button onClick={() => {
         if (phisher) {
-          console.log(`appending ${phisher} to `, phishers);
           phishers.push(phisher);
           localStorage.setItem('pendingPhishers', JSON.stringify(phishers));
           setPhisher('');
@@ -63,11 +62,10 @@ export default function (props ) {
 function SubmitBatchButton (props) {
   const { provider, phishers, invitation, setPhishers } = props;
   const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
+  console.log('trying to submit batch with', ethersProvider);
   return (<div>
     <button onClick={async () => {
-      console.log('submitting batch');
       const block = await reportPhishers(phishers, ethersProvider, invitation);
-      console.log('batch submitted', block);
       localStorage.clear();
       setPhishers([]);
     }}>Submit batch to blockchain</button>

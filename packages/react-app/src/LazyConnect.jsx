@@ -3,15 +3,16 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import chainList from './chainList';
 
 export default function LazyConnect (props) {
-  const { actionName, chainId, opts = {} } = props;
+  const { actionName, chainId } = props;
+  let { opts = {} } = props;
   const { needsAccountConnected = true } = opts;
-  const [provider, setInjectedProvider] = useState();
+  const [provider, setInjectedProvider] = useState(false);
   const [accounts, setAccounts] = useState([]);
-  const [error, setError] = useState(null);
-  const [userChainId, setUserChainId] = useState(null);
+  const [userChainId, setUserChainId] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (!provider && MetaMaskOnboarding.isMetaMaskInstalled()) { 
+    console.log('setting injected provider to ', window.ethereum);
     setInjectedProvider(window.ethereum);
   }
 
@@ -36,6 +37,10 @@ export default function LazyConnect (props) {
     }
 
     provider.on("accountsChanged", setAccounts);
+
+    return () => {
+      provider.removeListener('accountsChanged', setAccounts);
+    }
   }, []);
 
   // Get current selected network:
@@ -52,13 +57,15 @@ export default function LazyConnect (props) {
       return chainId;
     }
 
-    provider.on('chainChanged', (_chainId) => {
-      setUserChainId(_chainId);
-    });
+    provider.on('chainChanged', setUserChainId);
+
+    return () => {
+      provider.removeListener('chainChanged', setUserChainId);
+    }
   }, []);
 
   const needsToSwitchChain = Number(userChainId) !== chainId;
-  const needsToConnectAccount = needsAccountConnected && accounts && accounts.length === 0;
+  const needsToConnectAccount = needsAccountConnected && (!accounts || accounts.length === 0);
   const requiresAction = needsToSwitchChain || needsToConnectAccount;
 
   if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
@@ -105,6 +112,9 @@ export default function LazyConnect (props) {
     return (<div className="lazyConnect">Loading...</div>)
   }
 
+  console.log(`view with ${actionName} seems to think we're all good`, props);
+  console.log('accounts', accounts);
+  console.log(`needs accounts connected`, needsAccountConnected);
   const { children } = props;
 
   const childrenWithProps = React.Children.map(children, child => {
@@ -136,7 +146,7 @@ function createChecklist (checklistOpts) {
 }
 
 function switchAccountsItem (opts) {
-  const { needsAccountConnected, needsToConnectAccount, setAccounts, provider, setLoading, hasWallet } = opts;
+  const { needsToConnectAccount, setAccounts, provider, hasWallet } = opts;
 
   if (!needsToConnectAccount) {
     return null;
@@ -147,8 +157,8 @@ function switchAccountsItem (opts) {
   }
 
   return <li>☐ <button onClick={async () => {
-      const accounts = await provider.request({ method: 'wallet_requestAccounts' });
-      setAccounts(accounts);
+      const _accounts = await provider.request({ method: 'eth_requestAccounts' });
+      setAccounts(_accounts);
     }}>Connect an account</button>
   </li>
 }
