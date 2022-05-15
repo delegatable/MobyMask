@@ -24,7 +24,7 @@ const util = generateUtil({
 
 import PhishingReport from './PhishingReport';
 import PhisherCheck from './PhisherCheck';
-import { validateInvitation } from './delegator';
+import { validateInvitation } from './validateInvitation';
 import createInvitation from './createInvitation';
 import LazyConnect from './LazyConnect';
 
@@ -53,12 +53,15 @@ export default function Members (props) {
             }
             if (!parsedInvitation || parsedInvitation === 'null') {
               parsedInvitation = JSON.parse(query.get("invitation"));
-              await validateInvitation(parsedInvitation);
+              validateInvitation(parsedInvitation);
               document.cookie = query.get("invitation");
             }
 
             history.push('/members');
-            setInvitation(parsedInvitation);
+            validateInvitation(parsedInvitation);
+            if (parsedInvitation) {
+              setInvitation(parsedInvitation);
+            }
             setLoading(false);
           } catch (err) {
             console.error(err);
