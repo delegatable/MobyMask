@@ -53,11 +53,16 @@ export default function LazyConnect (props) {
     });
   }, []);
 
+  const needsToSwitchChain = Number(userChainId) !== chainId;
+  const needsToConnectAccount = needsAccountConnected && accounts && accounts.length === 0;
+  const requiresAction = needsToSwitchChain || needsToConnectAccount;
+
   if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
     return (<div className="lazyConnect">
       { createChecklist({
         hasWallet: MetaMaskOnboarding.isMetaMaskInstalled(),
         provider,
+        needsToConnectAccount,
         setLoading,
         chainId: chainId,
         userChainId,
@@ -73,16 +78,13 @@ export default function LazyConnect (props) {
         }}>Get MetaMask</button>
     </div>);
   }
-
-  const needsToSwitchChain = Number(userChainId) !== chainId;
-  const needsToConnectAccount = needsAccountConnected && accounts && accounts.length === 0;
-  const requiresAction = needsToSwitchChain || needsToConnectAccount;
-
+  
   if (requiresAction) {
     return <div className="lazyConnect">
       { createChecklist({
         setLoading,
         provider,
+        needsToConnectAccount,
         hasWallet: MetaMaskOnboarding.isMetaMaskInstalled(),
         chainId: chainId,
         userChainId,
@@ -115,6 +117,7 @@ export default function LazyConnect (props) {
 
 function createChecklist (checklistOpts) {
   const { chainId, userChainId, chainName, setAccounts, provider, setLoading,
+    needsToConnectAccount,
     needsAccountConnected, actionName, hasWallet, accounts } = checklistOpts;
   return (<div>
     <p>You need a few things to {actionName}.</p>
@@ -122,34 +125,57 @@ function createChecklist (checklistOpts) {
       { hasWallet ?
         <li>✅ Get a web3 compatible Wallet (like MetaMask)</li> :
         <li>☐ Get a web3 compatible Wallet (like MetaMask)</li> }
-      { needsAccountConnected ? (
-          accounts && accounts.length === 0 ?
-          <li>☐ <button onClick={async () => {
-            const accounts = await provider.request({ method: 'wallet_requestAccounts' });
-            setAccounts(accounts);
-          }}>Connect an account</button></li> :
-          <li>✅ Connect an account</li>
-      )
-          : null }
-      { !!chainId && 
-        (Number(userChainId) !== chainId ?
-          <li>☐ <button onClick={async () => {
-        provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x' + chainId.toString(16) }],
-        })
-        .then(() => {
-          setLoading(false);
-        })
-        .catch((reason) => {
-          setLoading(false);
-          setError(reason);
-        });
-        setLoading(true);
-      }}>Switch to the { chainName } network</button>
-      </li> :
-        <li>✅ Switch to the {chainName} network</li>)
-      }
+      { switchAccountsItem({ needsAccountConnected, needsToConnectAccount, setAccounts, provider, setLoading, accounts, hasWallet }) }
+      { switchNetworkItem({ chainId, userChainId, chainName, setAccounts, provider, setLoading, hasWallet })} 
     </ol>
    </div>);
+}
+
+function switchAccountsItem (opts) {
+  const { needsAccountConnected, needsToConnectAccount, setAccounts, provider, setLoading, hasWallet } = opts;
+
+  if (!needsToConnectAccount) {
+    return null;
+  }
+
+  if (!hasWallet) {
+    return <li>☐ Connect an account</li>;
+  }
+
+  return <li>☐ <button onClick={async () => {
+      const accounts = await provider.request({ method: 'wallet_requestAccounts' });
+      setAccounts(accounts);
+    }}>Connect an account</button>
+  </li>
+}
+
+function switchNetworkItem (opts) {
+  const { chainId, userChainId, chainName, provider, setLoading, hasWallet } = opts;
+  const needsToSwitchChain =  !!chainId && (Number(userChainId) !== chainId);
+  console.log('switchNetworkItem', opts);
+
+  if (!needsToSwitchChain) {
+    return null;
+  }
+
+  if (!hasWallet) {
+    return <li>Switch to the {chainName} network</li>;
+  }
+
+  return <li>
+    <button onClick={async () => {
+      provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x' + chainId.toString(16) }],
+      })
+      .then(() => {
+        setLoading(false);
+      })
+      .catch((reason) => {
+        setLoading(false);
+        setError(reason);
+      });
+      setLoading(true);
+    }}>Switch to the { chainName } network</button>
+  </li>
 }
