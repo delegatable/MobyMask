@@ -115,16 +115,16 @@ export default function Members (props) {
     <div>
       <div className="controlBoard">
 
-        <div className="phisherBox">
-          <div className="box">
-            <PhishingReport invitation={invitation}/>
-          </div>
-
           <div className='box'>
             <LazyConnect actionName="check if a user is a phisher" chainId={chainId}
               opts={{ needsAccountConnected: false }}>
               <PhisherCheckButton/>
             </LazyConnect>
+          </div>
+
+          <div className="phisherBox">
+          <div className="box">
+            <PhishingReport invitation={invitation}/>
           </div>
         </div>
 
