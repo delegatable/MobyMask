@@ -25,11 +25,23 @@ export default function (props ) {
     }
   }, []);
 
+  function registerNewPhisher() {
+    if (phisher) {
+      phishers.push(phisher);
+      localStorage.setItem('pendingPhishers', JSON.stringify(phishers));
+      setPhisher('');
+    } 
+  }
+
   return (
     <div className='box'>
       <h3>Report a phishing attempt</h3>
-      <input type="text" placeholder="@phisher_person" onChange={(event) => {
+      <input type="text" value={phisher} placeholder="@phisher_person" onChange={(event) => {
         setPhisher(event.target.value);
+      }} onKeyPress={(event) => {
+        if (event.key === 'Enter') {
+          return registerNewPhisher();
+        } 
       }}/>
       
       <button onClick={() => {

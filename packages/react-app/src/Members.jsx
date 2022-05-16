@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Landing from "./InstallExtension"
+import InstallExtension from "./InstallExtension"
 import ReviewAndRevokeInvitations from './ReviewAndRevokeInvitations';
 import {
   BrowserRouter as Router,
@@ -22,7 +22,9 @@ const util = generateUtil({
 });
 
 import PhishingReport from './PhishingReport';
+import MemberReport from './MemberReport';
 import { PhisherCheckButton } from './PhisherCheck';
+import { MemberCheckButton } from './MemberCheck';
 import { validateInvitation } from './validateInvitation';
 import createInvitation from './createInvitation';
 import LazyConnect from './LazyConnect';
@@ -115,6 +117,7 @@ export default function Members (props) {
     <div>
       <div className="controlBoard">
 
+        <div className="phisherBox">
           <div className='box'>
             <LazyConnect actionName="check if a user is a phisher" chainId={chainId}
               opts={{ needsAccountConnected: false }}>
@@ -122,9 +125,21 @@ export default function Members (props) {
             </LazyConnect>
           </div>
 
-          <div className="phisherBox">
           <div className="box">
             <PhishingReport invitation={invitation}/>
+          </div>
+        </div>
+
+        <div className="memberBox">
+          <div className='box'>
+            <LazyConnect actionName="check if a user is endorsed" chainId={chainId}
+              opts={{ needsAccountConnected: false }}>
+              <MemberCheckButton/>
+            </LazyConnect>
+          </div>
+
+          <div className="box">
+            <MemberReport invitation={invitation}/>
           </div>
         </div>
 
@@ -144,11 +159,7 @@ export default function Members (props) {
 
         </div>
 
-        <div className='box'>
-          <h3>Endorse a benevolent entity (coming soon)</h3>
-        </div>
-
-        <Landing />
+        <InstallExtension />
       </div>
 
     </div>

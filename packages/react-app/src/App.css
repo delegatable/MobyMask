@@ -70,6 +70,11 @@ button {
   padding: 4px;
 }
 
+.memberBox{
+  background-color: rgb(192, 255, 207);
+  padding: 4px;
+}
+
 .inviteBox {
   background-color: #acdeff;
   padding: 4px;
