@@ -12,7 +12,6 @@ export default function LazyConnect (props) {
   const [loading, setLoading] = useState(false);
 
   if (!provider && MetaMaskOnboarding.isMetaMaskInstalled()) { 
-    console.log('setting injected provider to ', window.ethereum);
     setInjectedProvider(window.ethereum);
   }
 
@@ -112,9 +111,6 @@ export default function LazyConnect (props) {
     return (<div className="lazyConnect">Loading...</div>)
   }
 
-  console.log(`view with ${actionName} seems to think we're all good`, props);
-  console.log('accounts', accounts);
-  console.log(`needs accounts connected`, needsAccountConnected);
   const { children } = props;
 
   const childrenWithProps = React.Children.map(children, child => {
