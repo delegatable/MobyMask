@@ -73,9 +73,13 @@ function SubmitBatchButton (props) {
   console.log('trying to submit batch with', ethersProvider);
   return (<div>
     <button onClick={async () => {
-      const block = await reportPhishers(phishers, ethersProvider, invitation);
-      localStorage.clear();
-      setPhishers([]);
+      try {
+        const block = await reportPhishers(phishers, ethersProvider, invitation);
+        localStorage.clear();
+        setPhishers([]);
+      } catch (err) {
+        alert(`Error: ${err}`);
+      }
     }}>Submit batch to blockchain</button>
   </div>);
 }

@@ -28,6 +28,7 @@ import { MemberCheckButton } from './MemberCheck';
 import { validateInvitation } from './validateInvitation';
 import createInvitation from './createInvitation';
 import LazyConnect from './LazyConnect';
+import copyInvitationLink from './copyInvitationLink';
 
 export default function Members (props) {
   const query = useQuery();
@@ -178,16 +179,15 @@ function generateInviteView(invitation, addInvitation) {
         <button onClick={() => {
           const petName = prompt('Who is this invitation for (for your personal use only, so you can view their reports and revoke the invitation)?');
           const newInvitation = createInvitation(invitation);
-          const inviteLink = window.location.origin + '/#/members?invitation=' + encodeURIComponent(JSON.stringify(newInvitation));
-          navigator.clipboard.writeText(inviteLink).then(function() {
-            alert('Copied to clipboard. Paste it somewhere only the intended recipients can see or you can lose your membership.');
+          copyInvitationLink(newInvitation, petName)
+          .then(() => {
             if (addInvitation) {
               addInvitation({
                 petName,
                 invitation: newInvitation,
               });
             }
-          });
+          })
         }}>Copy new invite link</button>
       </div> 
     );
@@ -200,6 +200,5 @@ function generateInviteView(invitation, addInvitation) {
 
 function useQuery() {
   const { search } = useLocation();
-
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }

@@ -9,6 +9,7 @@ const util = generateUtil({
   verifyingContract: address,
   name: CONTRACT_NAME,
 });
+import copyInvitationLink from './copyInvitationLink';
 
 export default function (props) {
   const { provider, invitations, invitation, setInvitations } = props;
@@ -38,6 +39,10 @@ export default function (props) {
       return (
         <div key={index}>
           <span>{ _invitation.petName }</span>
+          <button onClick={() => {
+            copyInvitationLink(_invitation.invitation, _invitation.petName)
+            .catch((err) => alert(err.message));
+          }}>Re-Copy</button>
           <button onClick={async () => {
             const { signedDelegations } = _invitation.invitation;
             const signedDelegation = signedDelegations[signedDelegations.length - 1];

@@ -64,9 +64,13 @@ function SubmitBatchButton (props) {
   const ethersProvider = new ethers.providers.Web3Provider(provider, 'any');
   return (<div>
     <button onClick={async () => {
-      const block = await reportMembers(members, ethersProvider, invitation);
-      localStorage.clear();
-      setMembers([]);
+      try {
+        const block = await reportMembers(members, ethersProvider, invitation);
+        localStorage.clear();
+        setMembers([]);
+     } catch (err) {
+        alert(`Error: ${err}`);
+      }
     }}>Submit batch to blockchain</button>
   </div>);
 }
