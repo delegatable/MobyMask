@@ -13,6 +13,7 @@ const { chainId } = require('./config.json');
 // Routes
 import InstallExtension from './InstallExtension';
 import Members from './Members';
+import { MemberCheckButton } from './MemberCheck';
 
 export default function QueryParamsRouter(props) {
   const { provider } = props;
@@ -22,9 +23,10 @@ export default function QueryParamsRouter(props) {
     <Switch>
       <Route exact path="/">
         <div className='box'>
-          <LazyConnect actionName="check if a user is a phisher" chainId={chainId}
+          <LazyConnect actionName="check if a user is a phisher or member" chainId={chainId}
             opts={{ needsAccountConnected: false }}>
             <PhisherCheckButton/>
+            <MemberCheckButton/>
           </LazyConnect>
         </div>
 
