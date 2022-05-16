@@ -4,6 +4,7 @@ import LazyConnect from './LazyConnect';
 const { ethers } = require("ethers");
 const config = require('./config.json')
 const { chainId } = config;
+import TextInput from './TextInput';
 
 export default function (props ) {
   const { invitation } = props;
@@ -25,25 +26,16 @@ export default function (props ) {
     }
   }, []);
 
-  function registerNewPhisher() {
-    if (phisher) {
-      phishers.push(phisher);
-      localStorage.setItem('pendingPhishers', JSON.stringify(phishers));
-      setPhisher('');
-    } 
-  }
-
   return (
     <div className='box'>
       <h3>Report a phishing attempt</h3>
-      <input type="text" value={phisher} placeholder="@phisher_person" onChange={(event) => {
-        setPhisher(event.target.value);
-      }} onKeyPress={(event) => {
-        if (event.key === 'Enter') {
-          return registerNewPhisher();
-        } 
+      <TextInput placeholder="@phisher_person" buttonLabel="Report"
+        onComplete={(phisher) => {
+        const newPhishers = [...phishers, phisher];
+        localStorage.setItem('pendingPhishers', JSON.stringify(newPhishers));
+        setPhishers(newPhishers);
       }}/>
-      
+
       <button onClick={() => {
         if (phisher) {
           phishers.push(phisher);
@@ -58,7 +50,11 @@ export default function (props ) {
           <p>Pending phishing reports:</p>
           <ol>
             {phishers.map((phisher, index) => {
-              return (<li key={index}>{phisher}</li>);
+              return (<li key={index}>{phisher} <button onClick={() => {
+                const newPhishers = phishers.filter((p) => p !== phisher);
+                localStorage.setItem('pendingPhishers', JSON.stringify(newPhishers));
+                setPhishers(newPhishers);
+              }}>Remove</button></li>);
             })}
           </ol>
 

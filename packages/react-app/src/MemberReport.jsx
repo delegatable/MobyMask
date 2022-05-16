@@ -4,6 +4,7 @@ import LazyConnect from './LazyConnect';
 const { ethers } = require("ethers");
 const config = require('./config.json')
 const { chainId } = config;
+import TextInput from './TextInput';
 
 export default function (props ) {
   const { invitation } = props;
@@ -25,26 +26,15 @@ export default function (props ) {
     }
   }, []);
 
-  function registerNewMember () {
-    if (member) {
-      members.push(member);
-      localStorage.setItem('pendingMembers', JSON.stringify(members));
-      setMember('');
-    } 
-  }
-
   return (
     <div className='box'>
       <h3>Endorse a member</h3>
-      <input type="text" value={member} placeholder="@member_person" onKeyPress={(event) => {
-        if (event.key === 'Enter') {
-          return registerNewMember();
-        }
-      }} onChange={(event) => {
-        setMember(event.target.value);
+      <TextInput placeholder="@member_person" buttonLabel="Endorse"
+        onComplete={(member) => {
+        members.push(member);
+        setMembers(members);
+        localStorage.setItem('pendingMembers', JSON.stringify(members));
       }}/>
-      
-      <button onClick={registerNewMember}>Endorse twitter user</button>
 
       <div className='members'>
         { members && members.length > 0 ? 
@@ -52,7 +42,11 @@ export default function (props ) {
           <p>Pending member nominations:</p>
           <ol>
             {members.map((member, index) => {
-              return (<li key={index}>{member}</li>);
+              return (<li key={index}>{member} <button onClick={() => {
+                const newMembers = members.filter((p) => p !== member);
+                localStorage.setItem('pendingMembers', JSON.stringify(newMembers));
+                setMembers(newMembers);
+              }}>Remove</button></li>);
             })}
           </ol>
 
