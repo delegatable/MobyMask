@@ -241,3 +241,4 @@ function fromHexString (hexString: string) {
   }
   return new Uint8Array(mapped);
 }
+

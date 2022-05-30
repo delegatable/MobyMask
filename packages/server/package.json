@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node index.ts",
+    "rootGen": "npx ts-node rootInviteGen.ts",
     "generateClient": "open-rpc-generator generate -c open-rpc-generator-config.json"
   },
   "author": "",
@@ -21,6 +22,6 @@
   },
   "devDependencies": {
     "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.2"
   }
 }
