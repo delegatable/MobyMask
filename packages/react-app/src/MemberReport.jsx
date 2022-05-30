@@ -8,11 +8,10 @@ import TextInput from './TextInput';
 
 export default function (props ) {
   const { invitation } = props;
-  const [ member, setMember ] = useState();
   const [ members, setMembers ] = useState([]);
   const [ loaded, setLoaded ] = useState(false);
 
-  useEffect(() => {
+  useEffect(function loadMembersFromDisk () {
     if (loaded) {
       return;
     }
@@ -24,15 +23,14 @@ export default function (props ) {
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  });
 
   return (
     <div className='box'>
       <h3>Endorse a member</h3>
       <TextInput placeholder="@member_person" buttonLabel="Endorse"
         onComplete={(member) => {
-        members.push(member);
-        setMembers(members);
+        setMembers([ ...members, member ]);
         localStorage.setItem('pendingMembers', JSON.stringify(members));
       }}/>
 
@@ -69,6 +67,7 @@ function SubmitBatchButton (props) {
         localStorage.clear();
         setMembers([]);
      } catch (err) {
+        console.error(err);
         alert(`Error: ${err}`);
       }
     }}>Submit batch to blockchain</button>

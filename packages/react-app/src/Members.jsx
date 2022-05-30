@@ -10,41 +10,35 @@ import {
   useLocation
 } from "react-router-dom";
 
-const types = require('./types')
-const { generateUtil } = require('eth-delegatable-utils');
-const { abi } = require('./artifacts');
-const { chainId, address, name } = require('./config.json');
-const CONTRACT_NAME = name;
-const util = generateUtil({
-  chainId,
-  verifyingContract: address,
-  name: CONTRACT_NAME,
-});
+const { validateInvitation } = require('eth-delegatable-utils');
+import contractInfo from './contractInfo';
+const { chainId } = contractInfo;
 
 import PhishingReport from './PhishingReport';
 import MemberReport from './MemberReport';
 import { PhisherCheckButton } from './PhisherCheck';
 import { MemberCheckButton } from './MemberCheck';
-import { validateInvitation } from './validateInvitation';
 import createInvitation from './createInvitation';
 import LazyConnect from './LazyConnect';
 import copyInvitationLink from './copyInvitationLink';
 
 export default function Members (props) {
   const query = useQuery();
-  const [ invitation, setInvitation ] = useState(null);
-  const [ errorMessage, setErrorMessage ] = useState(null);
-  const [ loading, setLoading ] = useState(false);
-  const [ invitations, setInvitations ] = useState([]);
+
   const [ loaded, setLoaded ] = useState(false); // For loading invitations
+  const [ loadingFromDisk, setLoadingFromDisk ] = useState(false);
+  const [ errorMessage, setErrorMessage ] = useState(null);
+
+  const [ invitation, setInvitation ] = useState(null); // Own invitation
+  const [ invitations, setInvitations ] = useState([]); // Outbound invitations
   const history = useHistory();
 
   
   // Load user's own invitation from disk or query string:
   useEffect(() => {
     async function checkInvitations () {
-      if (!loading) {
-        setLoading(true);
+      if (!loadingFromDisk) {
+        setLoadingFromDisk(true);
 
         if (!invitation) {
           try {
@@ -55,16 +49,23 @@ export default function Members (props) {
             }
             if (!parsedInvitation || parsedInvitation === 'null') {
               parsedInvitation = JSON.parse(query.get("invitation"));
-              validateInvitation(parsedInvitation);
+              console.log('parsed invitation', parsedInvitation);
+              validateInvitation({
+                contractInfo,
+                invitation: parsedInvitation,
+              });
               document.cookie = query.get("invitation");
             }
 
             history.push('/members');
-            validateInvitation(parsedInvitation);
+            validateInvitation({
+              contractInfo,
+              invitation: parsedInvitation,
+            });
             if (parsedInvitation) {
               setInvitation(parsedInvitation);
             }
-            setLoading(false);
+            setLoadingFromDisk(false);
           } catch (err) {
             console.error(err);
             setErrorMessage(err.message);
