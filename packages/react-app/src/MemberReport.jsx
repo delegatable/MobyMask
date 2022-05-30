@@ -30,7 +30,8 @@ export default function (props ) {
       <h3>Endorse a member</h3>
       <TextInput placeholder="@member_person" buttonLabel="Endorse"
         onComplete={(member) => {
-          const _member = member.indexOf('@') === '0' ? member.slice(1) : member;
+          const _member = member.indexOf('@') === 0 ? member.slice(1) : member;
+          if (members.includes(_member)) return;
           const newMembers = [...members, _member];
           setMembers(newMembers);
           localStorage.setItem('pendingMembers', JSON.stringify(newMembers));
