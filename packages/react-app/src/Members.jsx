@@ -49,7 +49,6 @@ export default function Members (props) {
             }
             if (!parsedInvitation || parsedInvitation === 'null') {
               parsedInvitation = JSON.parse(query.get("invitation"));
-              console.log('parsed invitation', parsedInvitation);
               validateInvitation({
                 contractInfo,
                 invitation: parsedInvitation,
@@ -114,7 +113,6 @@ export default function Members (props) {
     } 
   });
 
-  console.log('rendering members screen')
   return (
     <div>
       <div className="controlBoard">

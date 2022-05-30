@@ -29,7 +29,9 @@ export default function LazyConnect (props) {
     async function getAccounts() {
       try {
         const _accounts = await provider.request({ method: 'eth_accounts' });
-        setAccounts(_accounts);
+        if (_accounts.length > 0) {
+          setAccounts(_accounts);
+        }
       } catch (err) {
         console.log('Getting accounts failed!', err);
       }
@@ -142,7 +144,7 @@ function createChecklist (checklistOpts) {
 }
 
 function switchAccountsItem (opts) {
-  const { needsToConnectAccount, setAccounts, provider, hasWallet } = opts;
+  const { needsToConnectAccount, setAccounts, accounts, provider, hasWallet } = opts;
 
   if (!needsToConnectAccount) {
     return null;
@@ -150,6 +152,10 @@ function switchAccountsItem (opts) {
 
   if (!hasWallet) {
     return <li>☐ Connect an account</li>;
+  }
+
+  if (typeof accounts !== 'undefined' && accounts.length > 0) {
+    return null;
   }
 
   return <li>☐ <button onClick={async () => {

@@ -1,17 +1,17 @@
 import { ethers } from "ethers";
 const types = require('./types')
-const { generateUtil } = require('eth-delegatable-utils');
+const { createMembership } = require('eth-delegatable-utils');
 const { abi } = require('./artifacts');
 const { chainId, address, name } = require('./config.json');
+import contractInfo from "./contractInfo";
 const CONTRACT_NAME = name;
 
 export default async function reportPhishers (phishers, provider, invitation) {
   const { key, signedDelegations } = invitation;
-  const util = generateUtil({
-    chainId,
-    verifyingContract: address,
-    name: CONTRACT_NAME,
-  })
+  const membership = createMembership({
+    contractInfo,
+    invitation,
+  });
 
   const wallet = provider.getSigner();
   const registry = await attachRegistry(wallet);
@@ -31,13 +31,13 @@ export default async function reportPhishers (phishers, provider, invitation) {
   }));
 
   const queue = Math.floor(Math.random() * 100000000);
-  const signedInvocations = util.signInvocation({
+  const signedInvocations = membership.signInvocations({
     batch: invocations,
     replayProtection: {
       nonce: 1,
       queue,
     }
-  }, key);
+  });
 
   return await registry.invoke([signedInvocations]);
 }

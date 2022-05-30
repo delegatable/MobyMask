@@ -31,7 +31,8 @@ export default function (props ) {
       <h3>Report a phishing attempt</h3>
       <TextInput placeholder="@phisher_person" buttonLabel="Report"
         onComplete={(phisher) => {
-        const newPhishers = [...phishers, phisher];
+        const _phisher = phisher.indexOf('@') === '0' ? phisher.slice(1) : phisher;
+        const newPhishers = [...phishers, _phisher];
         localStorage.setItem('pendingPhishers', JSON.stringify(newPhishers));
         setPhishers(newPhishers);
       }}/>
