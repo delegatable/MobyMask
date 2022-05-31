@@ -19,6 +19,7 @@ import MemberReport from './MemberReport';
 import { PhisherCheckButton } from './PhisherCheck';
 import { MemberCheckButton } from './MemberCheck';
 import createInvitation from './createInvitation';
+const { createMembership } = require('eth-delegatable-utils');
 import LazyConnect from './LazyConnect';
 import copyInvitationLink from './copyInvitationLink';
 
@@ -106,6 +107,7 @@ export default function Members (props) {
   }
 
   const inviteView = generateInviteView(invitation, (invitation) => {
+    console.log('adding invitation', invitation);
     if (invitation) {
       const newInvites = [...invitations, invitation];
       localStorage.setItem('outstandingInvitations', JSON.stringify(newInvites));
@@ -153,10 +155,6 @@ export default function Members (props) {
               setInvitations={setInvitations}/>
           </LazyConnect>
 
-          <div className='box'>
-            <h3>Review your invites and their reports. (Coming soon!)</h3>
-          </div>
-
         </div>
 
         <InstallExtension />
@@ -169,6 +167,11 @@ export default function Members (props) {
 function generateInviteView(invitation, addInvitation) {
   const tier = invitation.signedDelegations.length;
 
+  const membership = createMembership({
+    invitation,
+    contractInfo,
+  })
+
   if (tier < 4) {
     return (
       <div className='box'>
@@ -177,7 +180,7 @@ function generateInviteView(invitation, addInvitation) {
         <p>If you invite an abusive person and don't revoke their activity quickly, you may have your membership revoked.</p>
         <button onClick={() => {
           const petName = prompt('Who is this invitation for (for your personal use only, so you can view their reports and revoke the invitation)?');
-          const newInvitation = createInvitation(invitation);
+          const newInvitation = membership.createInvitation();
           copyInvitationLink(newInvitation, petName)
           .then(() => {
             if (addInvitation) {
@@ -187,7 +190,13 @@ function generateInviteView(invitation, addInvitation) {
               });
             }
           })
-        }}>Copy new invite link</button>
+          .catch(() => {
+            addInvitation({
+              petName,
+              invitation: newInvitation,
+            });
+          })
+        }}>Create new invite link</button>
       </div> 
     );
   } else if (tier === 4) {

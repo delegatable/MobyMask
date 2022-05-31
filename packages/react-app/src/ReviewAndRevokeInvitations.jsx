@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 const { generateUtil } = require('eth-delegatable-utils');
 const { chainId, address, name } = require('./config.json');
 import createRegistry from './createRegistry';
+import linkForInvitation from './linkForInvitation';
 const CONTRACT_NAME = name;
 const util = generateUtil({
   chainId,
@@ -39,10 +40,11 @@ export default function (props) {
       return (
         <div key={index}>
           <span>{ _invitation.petName }</span>
+          <input type="text" readOnly value={linkForInvitation(_invitation.invitation)}></input>
           <button onClick={() => {
             copyInvitationLink(_invitation.invitation, _invitation.petName)
             .catch((err) => alert(err.message));
-          }}>Re-Copy</button>
+          }}>Copy</button>
           <button onClick={async () => {
             const { signedDelegations } = _invitation.invitation;
             const signedDelegation = signedDelegations[signedDelegations.length - 1];
@@ -53,7 +55,7 @@ export default function (props) {
             }
             const signedIntendedRevocation = util.signRevocation(intendedRevocation, invitation.key);
 
-            const block = await registry.revokeDelegation(signedDelegation, signedIntendedRevocation);
+            await registry.revokeDelegation(signedDelegation, signedIntendedRevocation);
 
             const newInvites = [...invitations];
             newInvites.splice(index, 1);
