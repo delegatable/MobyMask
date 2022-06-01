@@ -23,7 +23,7 @@ function App(props) {
 
       <div className='footer'>
         <p>Reporters are added on an invite-only basis.</p>
-        <p>Learn more about how our invite system works at <a href="https://github.com/danfinlay/delegatable-eth">delegatable-eth</a>.</p>
+        <p><a href="https://mirror.xyz/0x55e2780588aa5000F464f700D2676fD0a22Ee160/8whNch3m5KMzeo6g5eblcXMMplPf8UpW228cSh3nmzg">Learn more</a></p>
       </div>
 
     </div>
