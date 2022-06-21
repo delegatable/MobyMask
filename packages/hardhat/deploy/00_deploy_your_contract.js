@@ -8,7 +8,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   console.dir(deployer);
   try {
 
-  await deploy("PhisherRegistry", {
+  await deploy("ClaimRegistry", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     args: [ "MobyMask" ],
