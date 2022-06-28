@@ -13,7 +13,7 @@ const themes = {
 const prevTheme = window.localStorage.getItem("theme");
 
 const subgraphUri = "http://localhost:8000/subgraphs/name/scaffold-eth/your-contract";
-const watcherUri = "http://localhost:3010/graphql"; // TODO: replace with actual url
+const watcherUri = process?.env?.REACT_APP_WATCHER_URI;
 
 const subgraphEndpoint = new HttpLink({
   uri: subgraphUri,
