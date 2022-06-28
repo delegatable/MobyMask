@@ -644,7 +644,7 @@ task("send", "Send ETH")
 task("claimPhisher", "Claim if name is phisher")
   .addParam("name", "Phisher name")
   .addParam("contract", "Contract address")
-  .addOptionalParam("remove", "Remove from phiser list", false, types.boolean)
+  .addOptionalParam("remove", "Remove from phisher list", false, types.boolean)
   .setAction(async (args, hre) => {
     const { contract: contractAddress, name, remove } = args;
     await hre.run('compile');
