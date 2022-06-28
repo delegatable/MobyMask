@@ -96,10 +96,13 @@ module.exports = {
        url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
        mnemonic: mnemonic(),
     },
-    kovan: {
-       url: `https://rinkeby.infura.io/v3/${process.env.KOVAN_INFURA_KEY}`,
-       accounts: [`${process.env.KOVAN_DEPLOYER_PRIV_KEY}`],
-    },
+    
+    // Commented out to run hardhat locally without keys 
+    // kovan: {
+    //    url: `https://rinkeby.infura.io/v3/${process.env.KOVAN_INFURA_KEY}`,
+    //    accounts: [`${process.env.KOVAN_DEPLOYER_PRIV_KEY}`],
+    // },
+
      mainnet: {
        url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
        mnemonic: `${process.env.RINKEBY_DEPLOYER_PRIV_KEY}`,
@@ -636,4 +639,50 @@ task("send", "Send ETH")
     debug(JSON.stringify(txRequest, null, 2));
 
     return send(fromSigner, txRequest);
+  });
+
+task("claimPhisher", "Claim if name is phisher")
+  .addParam("name", "Phisher name")
+  .addParam("contract", "Contract address")
+  .addOptionalParam("remove", "Remove from phiser list", false, types.boolean)
+  .setAction(async (args, hre) => {
+    const { contract: contractAddress, name, remove } = args;
+    await hre.run('compile');
+    const Contract = await hre.ethers.getContractFactory('PhisherRegistry');
+    const contract = Contract.attach(contractAddress);
+
+    const transaction = await contract.claimIfPhisher(name, !remove);
+
+    const receipt = await transaction.wait();
+
+    if (receipt.events) {
+      const PhisherStatusUpdatedEvent = receipt.events.find(el => el.event === 'PhisherStatusUpdated');
+      
+      if (PhisherStatusUpdatedEvent && PhisherStatusUpdatedEvent.args) {
+        console.log('PhisherStatusUpdated Event args', PhisherStatusUpdatedEvent.args);
+      }
+    }
+  });
+
+task("claimMember", "Claim if name is member")
+  .addParam("name", "Member name")
+  .addParam("contract", "Contract address")
+  .addOptionalParam("remove", "Remove from member list", false, types.boolean)
+  .setAction(async (args, hre) => {
+    const { contract: contractAddress, name, remove } = args;
+    await hre.run('compile');
+    const Contract = await hre.ethers.getContractFactory('PhisherRegistry');
+    const contract = Contract.attach(contractAddress);
+
+    const transaction = await contract.claimIfMember(name, !remove);
+
+    const receipt = await transaction.wait();
+
+    if (receipt.events) {
+      const MemberStatusUpdatedEvent = receipt.events.find(el => el.event === 'MemberStatusUpdated');
+      
+      if (MemberStatusUpdatedEvent && MemberStatusUpdatedEvent.args) {
+        console.log('PhisherStatusUpdated Event args', MemberStatusUpdatedEvent.args);
+      }
+    }
   });
