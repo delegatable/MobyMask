@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
-const { generateUtil } = require("eth-delegatable-utils");
+const { generateUtil, createSignedDelegationHash } = require("eth-delegatable-utils");
 const { chainId, address, name } = require("./config.json");
 import createRegistry from "./createRegistry";
 import linkForInvitation from "./linkForInvitation";
@@ -55,7 +55,7 @@ export default function (props) {
                 const { signedDelegations } = _invitation.invitation;
                 const signedDelegation = signedDelegations[signedDelegations.length - 1];
 
-                const delegationHash = util.createSignedDelegationHash(signedDelegation);
+                const delegationHash = createSignedDelegationHash(signedDelegation);
                 const intendedRevocation = {
                   delegationHash,
                 };
