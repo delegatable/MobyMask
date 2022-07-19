@@ -100,7 +100,7 @@ function SubmitBatchButton(props) {
             localStorage.clear();
             setPhishers([]);
           } catch (err) {
-            alert(`Error: ${err}`);
+            alert(`Error: ${err.message}`);
           }
         }}
       >

@@ -4,6 +4,7 @@ import useLazyQuery from "./hooks/useLazyQuery";
 import LATEST_BLOCK_GRAPHQL from "./queries/latestBlock";
 import IS_MEMBER_GRAPHQL from "./queries/isMember";
 import TextInput from "./TextInput";
+import { address } from "./config.json";
 
 export default function MemberCheck(props) {
   const [output, setOutput] = useState("");
@@ -30,8 +31,9 @@ export default function MemberCheck(props) {
 export function MemberCheckButton() {
   // Get latest block
   const LATEST_BLOCK_GQL = gql(LATEST_BLOCK_GRAPHQL);
-  const { loading, data: latestBlockData } = useQuery(LATEST_BLOCK_GQL, {
+  const latestBlock = useLazyQuery(LATEST_BLOCK_GQL, {
     context: { clientName: "watcher" },
+    fetchPolicy: "no-cache",
   });
 
   // Check if isMember
@@ -39,19 +41,16 @@ export function MemberCheckButton() {
   const isMember = useLazyQuery(IS_MEMBER_GQL, {
     context: { clientName: "watcher" },
     variables: {
-      contractAddress: process?.env?.REACT_APP_CONTRACT_ADDRESS,
+      contractAddress: address,
     },
   });
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <MemberCheck
       checkMember={async name => {
         const codedName = `TWT:${name.toLowerCase()}`;
         try {
+          const { data: latestBlockData } = await latestBlock();
           const { data } = await isMember({ blockHash: latestBlockData?.latestBlock?.hash, key0: codedName });
 
           if (data?.isMember?.value) {

@@ -86,7 +86,7 @@ function SubmitBatchButton(props) {
             setMembers([]);
           } catch (err) {
             console.error(err);
-            alert(`Error: ${err}`);
+            alert(`Error: ${err.message}`);
           }
         }}
       >

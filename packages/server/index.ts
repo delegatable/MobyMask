@@ -25,7 +25,7 @@ const BASE_URI = 'https://mobymask.com/#';
 const fs = require('fs');
 const path = require('path');
 const configPath = path.join(__dirname, './config.json');
-const { privateKey, mnemonic, rpcUrl } = require('./secrets.json');
+const { privateKey, mnemonic, rpcUrl, baseURI = BASE_URI } = require('./secrets.json');
 
 const openrpcDocument = require('./openrpc.json');
 const { parseOpenRPCDocument } = require("@open-rpc/schema-utils-js");
@@ -230,7 +230,7 @@ async function signDelegation () {
   }
   console.log('A SIGNED DELEGATION/INVITE LINK:');
   console.log(JSON.stringify(invitation, null, 2));
-  console.log(BASE_URI + '/members?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
+  console.log(baseURI + '/members?invitation=' + encodeURIComponent(JSON.stringify(invitation)));
 }
 
 function fromHexString (hexString: string) {

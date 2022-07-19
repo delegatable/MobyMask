@@ -4,6 +4,7 @@ import useLazyQuery from "./hooks/useLazyQuery";
 import LATEST_BLOCK_GRAPHQL from "./queries/latestBlock";
 import IS_PHISHER_GRAPHQL from "./queries/isPhisher";
 import TextInput from "./TextInput";
+import { address } from "./config.json";
 
 export default function PhisherCheck(props) {
   const [output, setOutput] = useState("");
@@ -30,8 +31,9 @@ export default function PhisherCheck(props) {
 export function PhisherCheckButton() {
   // Get latest block
   const LATEST_BLOCK_GQL = gql(LATEST_BLOCK_GRAPHQL);
-  const { loading, data: latestBlockData } = useQuery(LATEST_BLOCK_GQL, {
+  const latestBlock = useLazyQuery(LATEST_BLOCK_GQL, {
     context: { clientName: "watcher" },
+    fetchPolicy: "no-cache",
   });
 
   // Check if isPhisher
@@ -39,19 +41,16 @@ export function PhisherCheckButton() {
   const isPhisher = useLazyQuery(IS_PHISHER_GQL, {
     context: { clientName: "watcher" },
     variables: {
-      contractAddress: process?.env?.REACT_APP_CONTRACT_ADDRESS,
+      contractAddress: address,
     },
   });
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <PhisherCheck
       checkPhisher={async name => {
         const codedName = `TWT:${name.toLowerCase()}`;
         try {
+          const { data: latestBlockData } = await latestBlock();
           const { data } = await isPhisher({ blockHash: latestBlockData?.latestBlock?.hash, key0: codedName });
 
           if (data?.isPhisher?.value) {
