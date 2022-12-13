@@ -70,7 +70,6 @@
     "assert": "^2.0.0",
     "autoprefixer": "^9.0.0",
     "babel-eslint": "^10.1.0",
-    "babel-loader": "^8.1.0",
     "babel-preset-react-app": "^10.0.1",
     "buffer": "^6.0.3",
     "chalk": "^4.1.0",
