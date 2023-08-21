@@ -219,6 +219,53 @@ describe(CONTRACT_NAME, function () {
     }
   });
 
+  it('Delegation to different address than the redeemer should fail', async () => {
+    const [owner, addr1, addr2] = await ethers.getSigners();
+  
+    const yourContract = await deployContract();
+    const { chainId } = await yourContract.provider.getNetwork();
+    const utilOpts = {
+      chainId,
+      verifyingContract: yourContract.address,
+      name: CONTRACT_NAME,
+    }
+    const util = generateUtil(utilOpts);
+  
+    // Delegation meant for addr1
+    const delegation = {
+      delegate: addr1.address,
+      authority: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      caveats: [],
+    };
+    const signedDelegation = util.signDelegation(delegation, ownerHexPrivateKey);
+  
+    // addr2 tries to redeem the delegation (should fail)
+    const desiredTx = await yourContract.populateTransaction.claimIfPhisher('InvalidDelegate', true);
+    const invocationMessage = {
+      replayProtection: {
+        nonce: '0x01',
+        queue: '0x00',
+      },
+      batch: [{
+        authority: [signedDelegation],
+        transaction: {
+          to: yourContract.address,
+          gasLimit: '10000000000000000',
+          data: desiredTx.data,
+        },
+      }],
+    };
+    const signedInvocation = util.signInvocation(invocationMessage, account2PrivKey);
+  
+    try {
+      // addr2 attempts to submit the invocation
+      await yourContract.connect(addr2).invoke([signedInvocation]);
+      throw new Error('Should have failed but succeeded');
+    } catch (err) {
+      expect(err.message).to.include('DelegatableCore:invalid-delegate');
+    }
+  });
+
   it('Delegates can not call ownership methods', async () => {
     const [owner, addr1, addr2] = await ethers.getSigners();
     console.log(`owner: ${owner.address}`);

@@ -76,6 +76,9 @@ abstract contract Delegatable is EIP712Decoder {
         canGrant = delegation.delegate;
       }
 
+      // Verify the delegate at the end of the delegation chain is the signer
+      require(canGrant == sender, "DelegatableCore:invalid-delegate");
+
       // Here we perform the requested invocation.
       Transaction memory transaction = invocation.transaction;
 
